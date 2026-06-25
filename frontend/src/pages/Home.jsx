@@ -7,7 +7,7 @@ function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 h-14 bg-[#f5f2ee] border-b border-[#ddd8d0]">
       <img src={logoSimbolo} alt="Tropia símbolo" className="h-8 w-8 object-contain" />
-      <img src={logoTexto} alt="Tropia" className="h-5 object-contain" />
+      <img src={logoTexto} alt="Tropia" className="h-7 object-contain" />
       <div className="flex items-center gap-4">
         <button aria-label="Buscar">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a18" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
