@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --tropia-bg:     #f5f2ee;
+  --tropia-dark:   #1a1a18;
+  --tropia-sand:   #e8e2d8;
+  --tropia-muted:  #8c8278;
+  --tropia-border: #ddd8d0;
+}
+
+body {
+  background-color: var(--tropia-bg);
+  color: var(--tropia-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ticker infinito */
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-animate { animation: ticker 20s linear infinite; }
+.ticker-animate-reverse { animation: ticker 24s linear infinite reverse; }
