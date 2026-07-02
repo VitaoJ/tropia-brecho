@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useFavoritos } from '../context/FavoritosContext'
 import logoSimbolo from '../assets/logo-simbolo.svg'
 import logoTexto from '../assets/logo-texto.svg'
 
@@ -148,6 +149,7 @@ const DESTAQUES = [
 
 function SecaoDestaques() {
   const navigate = useNavigate()
+  const { toggle, isFavorito } = useFavoritos()
   return (
     <section className="px-4 pt-6 pb-24">
       <h3 className="text-xs tracking-[0.2em] text-[#8c8278] mb-3 uppercase" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -165,8 +167,9 @@ function SecaoDestaques() {
                 </span>
               )}
               <button className="absolute top-2 right-2" aria-label="Favoritar"
-                onClick={(e) => e.stopPropagation()}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a18" strokeWidth="1.6">
+                onClick={(e) => { e.stopPropagation(); toggle(p) }}>
+                <svg width="16" height="16" viewBox="0 0 24 24"
+                  fill={isFavorito(p.id) ? '#1a1a18' : 'none'} stroke="#1a1a18" strokeWidth="1.6">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
               </button>
@@ -191,58 +194,31 @@ function SecaoDestaques() {
 
 /* ─── Bottom Nav ─────────────────────────────────────────────── */
 const NAV_ITEMS = [
-  {
-    label: 'Home',
-    icon: (active) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? '#1a1a18' : 'none'} stroke="#1a1a18" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-    ),
-  },
-  {
-    label: 'Catálogo',
-    icon: () => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a18" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-      </svg>
-    ),
-  },
-  {
-    label: 'Favoritos',
-    icon: () => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a18" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-      </svg>
-    ),
-  },
-  {
-    label: 'Carrinho',
-    icon: () => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a18" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
-      </svg>
-    ),
-  },
+  { label: 'Home',      path: '/',          icon: (a) => <svg width="22" height="22" viewBox="0 0 24 24" fill={a ? '#1a1a18' : 'none'} stroke="#1a1a18" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+  { label: 'Catálogo',  path: '/catalogo',  icon: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a18" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
+  { label: 'Favoritos', path: '/favoritos', icon: (a) => <svg width="22" height="22" viewBox="0 0 24 24" fill={a ? '#1a1a18' : 'none'} stroke="#1a1a18" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> },
+  { label: 'Carrinho',  path: '/carrinho',  icon: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a18" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> },
 ]
 
 function BottomNav() {
-  const [active, setActive] = useState(0)
+  const navigate = useNavigate()
+  const currentPath = window.location.pathname
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-[#f5f2ee] border-t border-[#ddd8d0] pb-safe"
-      style={{ height: 60 }}>
-      {NAV_ITEMS.map((item, i) => (
-        <button key={item.label} onClick={() => setActive(i)}
-          className="flex flex-col items-center gap-0.5 pt-2 pb-1 px-3">
-          {item.icon(active === i)}
-          <span className="text-[9px] tracking-[0.1em]"
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              color: active === i ? '#1a1a18' : '#8c8278'
-            }}>
-            {item.label}
-          </span>
-        </button>
-      ))}
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-[#f5f2ee] border-t border-[#ddd8d0]"
+      style={{ height: 60, maxWidth: 500, margin: '0 auto', left: 'inherit', right: 'inherit', width: '100%' }}>
+      {NAV_ITEMS.map((item) => {
+        const active = currentPath === item.path
+        return (
+          <button key={item.label} onClick={() => navigate(item.path)}
+            className="flex flex-col items-center gap-0.5 pt-2 pb-1 px-3">
+            {item.icon(active)}
+            <span className="text-[9px] tracking-[0.1em]"
+              style={{ fontFamily: "'DM Sans', sans-serif", color: active ? '#1a1a18' : '#8c8278' }}>
+              {item.label}
+            </span>
+          </button>
+        )
+      })}
     </nav>
   )
 }

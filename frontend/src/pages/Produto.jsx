@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react'
+import { useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useFavoritos } from '../context/FavoritosContext'
 
 /* ─── Mock data (substituir por fetch /api/produtos/:id) ─────── */
 const PRODUTO_MOCK = {
@@ -175,11 +176,13 @@ function Similares({ items }) {
 }
 
 /* ─── CTA fixo ───────────────────────────────────────────────── */
-function CTAFixo({ onAdd }) {
-  const [fav, setFav] = useState(false)
+function CTAFixo({ produto, onAdd }) {
+  const { toggle, isFavorito } = useFavoritos()
+  const fav = isFavorito(produto.id)
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#f5f2ee] border-t border-[#ddd8d0] px-4 py-3 flex gap-3">
-      <button onClick={() => setFav(f => !f)}
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#f5f2ee] border-t border-[#ddd8d0] px-4 py-3 flex gap-3"
+      style={{ maxWidth: 500, margin: '0 auto', left: 'inherit', right: 'inherit', width: '100%' }}>
+      <button onClick={() => toggle(produto)}
         className="flex-none w-12 h-12 flex items-center justify-center border border-[#ddd8d0] rounded-sm"
         aria-label="Favoritar">
         <svg width="20" height="20" viewBox="0 0 24 24"
@@ -299,7 +302,7 @@ export default function Produto() {
       </main>
 
       {/* CTA fixo */}
-      <CTAFixo onAdd={handleAdd} />
+      <CTAFixo produto={produto} onAdd={handleAdd} />
     </div>
   )
 }
