@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useFavoritos } from '../context/FavoritosContext'
 
