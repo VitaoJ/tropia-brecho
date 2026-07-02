@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import logoSimbolo from '../assets/logo-simbolo.svg'
 import logoTexto from '../assets/logo-texto.svg'
 
@@ -139,13 +140,14 @@ function SecaoCategorias() {
 
 /* ─── Destaques ──────────────────────────────────────────────── */
 const DESTAQUES = [
-  { nome: 'Blusa Vintage', tamanho: 'M', preco: 'R$ 49', novo: true },
-  { nome: 'Calça Wide Leg', tamanho: '38', preco: 'R$ 89', novo: false },
-  { nome: 'Vestido Floral', tamanho: 'P', preco: 'R$ 65', novo: true },
-  { nome: 'Jaqueta Jeans', tamanho: 'G', preco: 'R$ 120', novo: false },
+  { id: 1, nome: 'Blusa Vintage', tamanho: 'M', preco: 'R$ 49', novo: true },
+  { id: 2, nome: 'Calça Wide Leg', tamanho: '38', preco: 'R$ 89', novo: false },
+  { id: 3, nome: 'Vestido Floral', tamanho: 'P', preco: 'R$ 65', novo: true },
+  { id: 4, nome: 'Jaqueta Jeans', tamanho: 'G', preco: 'R$ 120', novo: false },
 ]
 
 function SecaoDestaques() {
+  const navigate = useNavigate()
   return (
     <section className="px-4 pt-6 pb-24">
       <h3 className="text-xs tracking-[0.2em] text-[#8c8278] mb-3 uppercase" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -153,7 +155,7 @@ function SecaoDestaques() {
       </h3>
       <div className="grid grid-cols-2 gap-3">
         {DESTAQUES.map((p) => (
-          <div key={p.nome} className="group cursor-pointer">
+          <div key={p.id} className="group cursor-pointer" onClick={() => navigate(`/produto/${p.id}`)}>
             <div className="relative rounded-sm mb-2 overflow-hidden"
               style={{ aspectRatio: '3/4', background: '#ddd8d0' }}>
               {p.novo && (
@@ -162,7 +164,8 @@ function SecaoDestaques() {
                   NOVO
                 </span>
               )}
-              <button className="absolute top-2 right-2" aria-label="Favoritar">
+              <button className="absolute top-2 right-2" aria-label="Favoritar"
+                onClick={(e) => e.stopPropagation()}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a18" strokeWidth="1.6">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
