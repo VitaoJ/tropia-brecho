@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useFavoritos } from '../context/FavoritosContext'
+import { buscarProduto } from '../services/api'
 
 /* ─── Mock data (substituir por fetch /api/produtos/:id) ─────── */
 const PRODUTO_MOCK = {
@@ -47,11 +48,13 @@ function CarrosselFotos({ fotos }) {
   return (
     <div className="relative overflow-hidden" style={{ aspectRatio: '3/4' }}
       onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-      {/* Track */}
+      {/* Track — cada foto pode ser cor (#hex) ou URL de imagem */}
       <div className="flex h-full transition-transform duration-400 ease-in-out"
         style={{ transform: `translateX(-${idx * 100}%)` }}>
-        {fotos.map((cor, i) => (
-          <div key={i} className="flex-none w-full h-full" style={{ background: cor }} />
+        {fotos.map((foto, i) => (
+          foto.startsWith('#')
+            ? <div key={i} className="flex-none w-full h-full" style={{ background: foto }} />
+            : <img key={i} src={foto} alt={`Foto ${i + 1}`} className="flex-none w-full h-full object-cover" />
         ))}
       </div>
 
@@ -146,6 +149,8 @@ function TabelaMedidas({ medidas }) {
 
 /* ─── Similares ──────────────────────────────────────────────── */
 function Similares({ items }) {
+  const navigate = useNavigate()
+  if (items.length === 0) return <div className="pb-32" />
   return (
     <div className="pb-32">
       <h3 className="text-xs tracking-[0.18em] text-[#654a2b] uppercase mb-3 px-4"
@@ -154,8 +159,10 @@ function Similares({ items }) {
       </h3>
       <div className="flex gap-3 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: 'none' }}>
         {items.map((p) => (
-          <div key={p.id} className="flex-none w-36 cursor-pointer">
-            <div className="rounded-sm mb-1.5" style={{ aspectRatio: '3/4', background: p.cor }} />
+          <div key={p.id} className="flex-none w-36 cursor-pointer" onClick={() => navigate(`/produto/${p.id}`)}>
+            <div className="rounded-sm mb-1.5 overflow-hidden relative" style={{ aspectRatio: '3/4', background: p.cor ?? '#c4ae90' }}>
+              {p.imagem && <img src={p.imagem} alt={p.nome} className="absolute inset-0 w-full h-full object-cover" />}
+            </div>
             <p className="text-sm leading-tight text-[#250000] truncate"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '0.9rem' }}>
               {p.nome}
@@ -200,14 +207,68 @@ function CTAFixo({ produto, onAdd }) {
 }
 
 /* ─── Página ─────────────────────────────────────────────────── */
+const CONDICAO_LABEL = { otimo: 'Ótimo', bom: 'Bom', regular: 'Regular' }
+const CORES_FALLBACK = ['#c4ae90', '#a98f6e', '#d6c8b3']
+
+// Converte o produto da API para o formato usado pelos componentes
+function mapearProduto(p) {
+  return {
+    id: p.id,
+    nome: p.name,
+    marca: p.categoria ?? '',
+    tags: [p.categoria, p.gender, p.size ? `Tam. ${p.size}` : null].filter(Boolean),
+    preco: Number(p.price),
+    tamanho: p.size ?? '—',
+    medidas: p.medidas ?? null,
+    condicao: CONDICAO_LABEL[p.condition] ?? 'Bom',
+    descricao: p.description ?? '',
+    fotos: p.images?.length ? p.images : CORES_FALLBACK,
+    categoria: p.categoria,
+  }
+}
+
 export default function Produto() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const produto = PRODUTO_MOCK // TODO: fetch /api/produtos/${id}
+  const [produto, setProduto] = useState(null)
+  const [similares, setSimilares] = useState([])
+  const [carregando, setCarregando] = useState(true)
+
+  useEffect(() => {
+    setCarregando(true)
+    buscarProduto(id)
+      .then(({ produto: p, similares: s }) => {
+        setProduto(mapearProduto(p))
+        setSimilares(s.map(item => ({
+          id: item.id,
+          nome: item.name,
+          tamanho: item.size ?? '—',
+          preco: Number(item.price).toFixed(0),
+          imagem: item.images?.[0] ?? null,
+        })))
+      })
+      .catch(err => {
+        console.warn('API indisponível, usando produto de exemplo:', err.message)
+        setProduto(PRODUTO_MOCK)
+        setSimilares(SIMILARES_MOCK)
+      })
+      .finally(() => setCarregando(false))
+  }, [id])
 
   const handleAdd = () => {
     // TODO: CartContext.addItem(produto)
     alert('Adicionado ao carrinho!')
+  }
+
+  if (carregando || !produto) {
+    return (
+      <div className="min-h-screen bg-[#eae1d4] flex items-center justify-center">
+        <span className="text-xs tracking-[0.2em] text-[#654a2b] uppercase"
+          style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          Carregando...
+        </span>
+      </div>
+    )
   }
 
   return (
@@ -262,9 +323,11 @@ export default function Produto() {
               style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {produto.tamanho}
             </span>
-            <span className="text-xs text-[#654a2b]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Busto {produto.medidas.busto} cm
-            </span>
+            {produto.medidas?.busto && (
+              <span className="text-xs text-[#654a2b]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Busto {produto.medidas.busto} cm
+              </span>
+            )}
           </div>
 
           {/* Condição */}
@@ -273,11 +336,13 @@ export default function Produto() {
           {/* Divider */}
           <div className="border-t border-[#d6c8b3]" />
 
-          {/* Tabela de medidas */}
-          <TabelaMedidas medidas={produto.medidas} />
-
-          {/* Divider */}
-          <div className="border-t border-[#d6c8b3]" />
+          {/* Tabela de medidas (quando disponível) */}
+          {produto.medidas && (
+            <>
+              <TabelaMedidas medidas={produto.medidas} />
+              <div className="border-t border-[#d6c8b3]" />
+            </>
+          )}
 
           {/* Descrição */}
           <div>
@@ -297,7 +362,7 @@ export default function Produto() {
 
         {/* Peças similares */}
         <div className="pt-4">
-          <Similares items={SIMILARES_MOCK} />
+          <Similares items={similares} />
         </div>
       </main>
 

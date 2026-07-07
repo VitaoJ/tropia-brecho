@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFavoritos } from '../context/FavoritosContext'
+import { listarProdutos, formatarPreco } from '../services/api'
 import logoSimbolo from '../assets/logo-simbolo.svg'
 import logoTexto from '../assets/logo-texto.svg'
 
@@ -140,26 +141,51 @@ function SecaoCategorias() {
 }
 
 /* ─── Destaques ──────────────────────────────────────────────── */
-const DESTAQUES = [
+// Fallback exibido enquanto a API não responde (ou está fora do ar)
+const DESTAQUES_FALLBACK = [
   { id: 1, nome: 'Blusa Vintage', tamanho: 'M', preco: 'R$ 49', novo: true },
   { id: 2, nome: 'Calça Wide Leg', tamanho: '38', preco: 'R$ 89', novo: false },
   { id: 3, nome: 'Vestido Floral', tamanho: 'P', preco: 'R$ 65', novo: true },
   { id: 4, nome: 'Jaqueta Jeans', tamanho: 'G', preco: 'R$ 120', novo: false },
 ]
 
+// Peça é "NOVO" se entrou há menos de 14 dias
+const ehNovo = (createdAt) =>
+  createdAt && (Date.now() - new Date(createdAt).getTime()) < 14 * 24 * 60 * 60 * 1000
+
 function SecaoDestaques() {
   const navigate = useNavigate()
   const { toggle, isFavorito } = useFavoritos()
+  const [destaques, setDestaques] = useState(DESTAQUES_FALLBACK)
+
+  useEffect(() => {
+    listarProdutos({ limite: 4 })
+      .then(({ produtos }) => {
+        if (produtos.length === 0) return
+        setDestaques(produtos.map(p => ({
+          id: p.id,
+          nome: p.name,
+          tamanho: p.size ?? '—',
+          preco: formatarPreco(p.price),
+          novo: ehNovo(p.created_at),
+          imagem: p.images?.[0] ?? null,
+        })))
+      })
+      .catch(err => console.warn('API indisponível, usando destaques de exemplo:', err.message))
+  }, [])
   return (
     <section className="px-4 pt-6 pb-24">
       <h3 className="text-xs tracking-[0.2em] text-[#654a2b] mb-3 uppercase" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         Destaques
       </h3>
       <div className="grid grid-cols-2 gap-3">
-        {DESTAQUES.map((p) => (
+        {destaques.map((p) => (
           <div key={p.id} className="group cursor-pointer" onClick={() => navigate(`/produto/${p.id}`)}>
             <div className="relative rounded-sm mb-2 overflow-hidden"
               style={{ aspectRatio: '3/4', background: '#d6c8b3' }}>
+              {p.imagem && (
+                <img src={p.imagem} alt={p.nome} className="absolute inset-0 w-full h-full object-cover" />
+              )}
               {p.novo && (
                 <span className="absolute top-2 left-2 text-[9px] tracking-[0.15em] bg-[#ffc509] text-[#250000] px-2 py-0.5 font-medium"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}>
