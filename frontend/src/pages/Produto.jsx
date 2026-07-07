@@ -13,15 +13,15 @@ const PRODUTO_MOCK = {
   medidas: { ombro: 38, busto: 88, cintura: 72, comprimento: 110, manga: null },
   condicao: 'Ótimo',
   descricao: 'Vestido midi com estampa floral em tons terrosos. Tecido leve, ideal para dias quentes. Decote V e manga curta bufante. Peça única selecionada com atenção à qualidade.',
-  fotos: ['#c9c2b8', '#b8b0a5', '#ddd8d0'],
+  fotos: ['#c4ae90', '#a98f6e', '#d6c8b3'],
   categoria: 'Feminino',
 }
 
 const SIMILARES_MOCK = [
-  { id: 2, nome: 'Blusa Floral', tamanho: 'P', preco: 49, cor: '#c9c2b8' },
-  { id: 3, nome: 'Saia Midi', tamanho: 'M', preco: 65, cor: '#b8b0a5' },
-  { id: 4, nome: 'Vestido Linho', tamanho: 'G', preco: 120, cor: '#ddd8d0' },
-  { id: 5, nome: 'Blusa Estampada', tamanho: 'M', preco: 42, cor: '#c5bdb2' },
+  { id: 2, nome: 'Blusa Floral', tamanho: 'P', preco: 49, cor: '#c4ae90' },
+  { id: 3, nome: 'Saia Midi', tamanho: 'M', preco: 65, cor: '#a98f6e' },
+  { id: 4, nome: 'Vestido Linho', tamanho: 'G', preco: 120, cor: '#d6c8b3' },
+  { id: 5, nome: 'Blusa Estampada', tamanho: 'M', preco: 42, cor: '#bfa887' },
 ]
 
 const CONDICAO_CONFIG = {
@@ -66,7 +66,7 @@ function CarrosselFotos({ fotos }) {
         {fotos.map((_, i) => (
           <button key={i} onClick={() => setIdx(i)}
             className="rounded-full transition-all"
-            style={{ width: idx === i ? 18 : 6, height: 6, background: idx === i ? '#f5f2ee' : 'rgba(245,242,238,0.45)' }} />
+            style={{ width: idx === i ? 18 : 6, height: 6, background: idx === i ? '#eae1d4' : 'rgba(234,225,212,0.45)' }} />
         ))}
       </div>
     </div>
@@ -78,13 +78,13 @@ function BadgePix({ preco }) {
   const precoPix = (preco * 0.95).toFixed(2)
   return (
     <div className="flex items-center gap-2 mt-1">
-      <span className="text-2xl font-medium text-[#1a1a18]"
+      <span className="text-2xl font-medium text-[#250000]"
         style={{ fontFamily: "'Cormorant Garamond', serif" }}>
         R$ {preco.toFixed(2).replace('.', ',')}
       </span>
-      <span className="text-[10px] tracking-[0.12em] bg-[#1a1a18] text-[#f5f2ee] px-2 py-0.5 rounded-sm"
+      <span className="text-[10px] tracking-[0.12em] bg-[#ffc509] text-[#250000] px-2 py-0.5 rounded-sm font-medium"
         style={{ fontFamily: "'DM Sans', sans-serif" }}>
-        PIX R$ {precoPix.replace('.', ',')} <span className="opacity-70">(-5%)</span>
+        PIX R$ {precoPix.replace('.', ',')} <span className="opacity-60">(-5%)</span>
       </span>
     </div>
   )
@@ -99,9 +99,9 @@ function BadgeCondicao({ condicao }) {
         style={{ background: cfg.bg, color: cfg.cor, fontFamily: "'DM Sans', sans-serif" }}>
         {condicao}
       </span>
-      <span className="flex items-center gap-1 text-[11px] text-[#8c8278]"
+      <span className="flex items-center gap-1 text-[11px] text-[#654a2b]"
         style={{ fontFamily: "'DM Sans', sans-serif" }}>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8c8278" strokeWidth="2">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#654a2b" strokeWidth="2">
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
         </svg>
         Verificado
@@ -122,19 +122,19 @@ function TabelaMedidas({ medidas }) {
 
   return (
     <div>
-      <h3 className="text-xs tracking-[0.18em] text-[#8c8278] uppercase mb-2"
+      <h3 className="text-xs tracking-[0.18em] text-[#654a2b] uppercase mb-2"
         style={{ fontFamily: "'DM Sans', sans-serif" }}>
         Medidas
       </h3>
-      <div className="border border-[#ddd8d0] rounded-sm overflow-hidden">
+      <div className="border border-[#d6c8b3] rounded-sm overflow-hidden">
         {campos.map(([label, valor], i) => (
           <div key={label}
-            className={`flex justify-between items-center px-3 py-2.5 ${i < campos.length - 1 ? 'border-b border-[#ddd8d0]' : ''}`}
-            style={{ background: i % 2 === 0 ? '#f5f2ee' : '#faf8f5' }}>
-            <span className="text-xs text-[#8c8278]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            className={`flex justify-between items-center px-3 py-2.5 ${i < campos.length - 1 ? 'border-b border-[#d6c8b3]' : ''}`}
+            style={{ background: i % 2 === 0 ? '#eae1d4' : '#f2ead9' }}>
+            <span className="text-xs text-[#654a2b]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {label}
             </span>
-            <span className="text-sm text-[#1a1a18]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <span className="text-sm text-[#250000]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {valor} cm
             </span>
           </div>
@@ -148,7 +148,7 @@ function TabelaMedidas({ medidas }) {
 function Similares({ items }) {
   return (
     <div className="pb-32">
-      <h3 className="text-xs tracking-[0.18em] text-[#8c8278] uppercase mb-3 px-4"
+      <h3 className="text-xs tracking-[0.18em] text-[#654a2b] uppercase mb-3 px-4"
         style={{ fontFamily: "'DM Sans', sans-serif" }}>
         Peças similares
       </h3>
@@ -156,15 +156,15 @@ function Similares({ items }) {
         {items.map((p) => (
           <div key={p.id} className="flex-none w-36 cursor-pointer">
             <div className="rounded-sm mb-1.5" style={{ aspectRatio: '3/4', background: p.cor }} />
-            <p className="text-sm leading-tight text-[#1a1a18] truncate"
+            <p className="text-sm leading-tight text-[#250000] truncate"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '0.9rem' }}>
               {p.nome}
             </p>
             <div className="flex justify-between items-center mt-0.5">
-              <span className="text-[10px] text-[#8c8278]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <span className="text-[10px] text-[#654a2b]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 Tam. {p.tamanho}
               </span>
-              <span className="text-xs text-[#1a1a18]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <span className="text-xs text-[#250000]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 R$ {p.preco}
               </span>
             </div>
@@ -180,18 +180,18 @@ function CTAFixo({ produto, onAdd }) {
   const { toggle, isFavorito } = useFavoritos()
   const fav = isFavorito(produto.id)
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#f5f2ee] border-t border-[#ddd8d0] px-4 py-3 flex gap-3"
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#eae1d4] border-t border-[#d6c8b3] px-4 py-3 flex gap-3"
       style={{ maxWidth: 500, margin: '0 auto', left: 'inherit', right: 'inherit', width: '100%' }}>
       <button onClick={() => toggle(produto)}
-        className="flex-none w-12 h-12 flex items-center justify-center border border-[#ddd8d0] rounded-sm"
+        className="flex-none w-12 h-12 flex items-center justify-center border border-[#d6c8b3] rounded-sm"
         aria-label="Favoritar">
         <svg width="20" height="20" viewBox="0 0 24 24"
-          fill={fav ? '#1a1a18' : 'none'} stroke="#1a1a18" strokeWidth="1.6">
+          fill={fav ? '#250000' : 'none'} stroke="#250000" strokeWidth="1.6">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
       </button>
       <button onClick={onAdd}
-        className="flex-1 h-12 bg-[#1a1a18] text-[#f5f2ee] text-xs tracking-[0.16em] rounded-sm active:opacity-80 transition-opacity"
+        className="flex-1 h-12 bg-[#250000] text-[#eae1d4] text-xs tracking-[0.16em] rounded-sm active:opacity-80 transition-opacity"
         style={{ fontFamily: "'DM Sans', sans-serif" }}>
         ADICIONAR AO CARRINHO
       </button>
@@ -211,12 +211,12 @@ export default function Produto() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f2ee]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen bg-[#eae1d4]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center px-4 h-14 bg-[#f5f2ee] border-b border-[#ddd8d0] gap-3">
-        <button onClick={() => navigate(-1)} aria-label="Voltar" className="flex items-center gap-1.5 text-xs text-[#8c8278]"
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center px-4 h-14 bg-[#eae1d4] border-b border-[#d6c8b3] gap-3">
+        <button onClick={() => navigate(-1)} aria-label="Voltar" className="flex items-center gap-1.5 text-xs text-[#654a2b]"
           style={{ fontFamily: "'DM Sans', sans-serif" }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8c8278" strokeWidth="1.8" strokeLinecap="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#654a2b" strokeWidth="1.8" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
           Catálogo
@@ -234,35 +234,35 @@ export default function Produto() {
           <div>
             <div className="flex gap-1.5 flex-wrap mb-2">
               {produto.tags.map(t => (
-                <span key={t} className="text-[10px] tracking-[0.14em] text-[#8c8278] border border-[#ddd8d0] px-2 py-0.5 rounded-full"
+                <span key={t} className="text-[10px] tracking-[0.14em] text-[#654a2b] border border-[#d6c8b3] px-2 py-0.5 rounded-full"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}>
                   {t}
                 </span>
               ))}
             </div>
-            <h1 className="text-2xl font-medium text-[#1a1a18] leading-tight"
+            <h1 className="text-2xl font-medium text-[#250000] leading-tight"
               style={{ fontFamily: "'Cormorant Garamond', serif" }}>
               {produto.nome}
             </h1>
-            <p className="text-xs text-[#8c8278] mt-0.5" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <p className="text-xs text-[#654a2b] mt-0.5" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {produto.marca}
             </p>
           </div>
 
           {/* Divider */}
-          <div className="border-t border-[#ddd8d0]" />
+          <div className="border-t border-[#d6c8b3]" />
 
           {/* Preço + PIX */}
           <BadgePix preco={produto.preco} />
 
           {/* Tamanho */}
           <div className="flex items-center gap-3">
-            <span className="text-xs text-[#8c8278]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Tamanho</span>
-            <span className="w-9 h-9 flex items-center justify-center border border-[#1a1a18] text-sm font-medium text-[#1a1a18]"
+            <span className="text-xs text-[#654a2b]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Tamanho</span>
+            <span className="w-9 h-9 flex items-center justify-center border border-[#250000] text-sm font-medium text-[#250000]"
               style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {produto.tamanho}
             </span>
-            <span className="text-xs text-[#8c8278]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <span className="text-xs text-[#654a2b]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               Busto {produto.medidas.busto} cm
             </span>
           </div>
@@ -271,28 +271,28 @@ export default function Produto() {
           <BadgeCondicao condicao={produto.condicao} />
 
           {/* Divider */}
-          <div className="border-t border-[#ddd8d0]" />
+          <div className="border-t border-[#d6c8b3]" />
 
           {/* Tabela de medidas */}
           <TabelaMedidas medidas={produto.medidas} />
 
           {/* Divider */}
-          <div className="border-t border-[#ddd8d0]" />
+          <div className="border-t border-[#d6c8b3]" />
 
           {/* Descrição */}
           <div>
-            <h3 className="text-xs tracking-[0.18em] text-[#8c8278] uppercase mb-2"
+            <h3 className="text-xs tracking-[0.18em] text-[#654a2b] uppercase mb-2"
               style={{ fontFamily: "'DM Sans', sans-serif" }}>
               Sobre a peça
             </h3>
-            <p className="text-sm text-[#1a1a18] leading-relaxed"
+            <p className="text-sm text-[#250000] leading-relaxed"
               style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {produto.descricao}
             </p>
           </div>
 
           {/* Divider */}
-          <div className="border-t border-[#ddd8d0]" />
+          <div className="border-t border-[#d6c8b3]" />
         </div>
 
         {/* Peças similares */}

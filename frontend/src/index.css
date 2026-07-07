@@ -3,11 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --tropia-bg:     #f5f2ee;
-  --tropia-dark:   #1a1a18;
-  --tropia-sand:   #e8e2d8;
-  --tropia-muted:  #8c8278;
-  --tropia-border: #ddd8d0;
+  --tropia-bg:     #eae1d4;
+  --tropia-dark:   #250000;
+  --tropia-brown:  #432d1c;
+  --tropia-sand:   #e0d4c2;
+  --tropia-muted:  #654a2b;
+  --tropia-border: #d6c8b3;
+  --tropia-accent: #ffc509;
 }
 
 body {

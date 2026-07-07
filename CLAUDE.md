@@ -11,8 +11,10 @@ Repositório: github.com/VitaoJ/tropia-brecho
 - **Pagamento**: Mercado Pago (PIX com 5% desconto + cartão)
 
 ## Identidade visual
-- Paleta: neutros elegantes — preto `#1A1A18`, off-white `#F5F2EE`, areia `#E8E2D8`, mudo `#8C8278`, borda `#DDD8D0`
-- Abordagem: **mobile-first** (tudo pensado primeiro para celular)
+- Paleta oficial: creme `#EAE1D4` (fundo), marrom-preto `#250000` (texto/dark), marrom médio `#654A2B` (secundários), marrom escuro `#432D1C` (apoio), amarelo `#FFC509` (destaque — badges NOVO e PIX)
+- Tons derivados: areia `#E0D4C2`, borda `#D6C8B3`, card `#DDCFB9`
+- Fontes: Cormorant Garamond (títulos, serif) + DM Sans (UI)
+- Abordagem: **mobile-first** (tudo pensado primeiro para celular); desktop = container central de 500px
 - Logos: `logo.svg` (só texto, estilo handmade) + `tropia-desenho.svg` (símbolo orgânico)
 
 ## Estrutura de pastas

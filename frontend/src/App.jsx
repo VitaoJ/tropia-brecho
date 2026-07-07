@@ -11,8 +11,8 @@ import ScrollToTop from './components/ScrollToTop'
 
 function MobileContainer({ children }) {
   return (
-    <div className="min-h-screen bg-[#e8e2d8] flex justify-center">
-      <div className="w-full bg-[#f5f2ee]" style={{ maxWidth: 500 }}>
+    <div className="min-h-screen bg-[#e0d4c2] flex justify-center">
+      <div className="w-full bg-[#eae1d4]" style={{ maxWidth: 500 }}>
         {children}
       </div>
     </div>
