@@ -9,10 +9,11 @@ const router = Router()
 router.get('/', async (req, res) => {
   try {
     const { categoria, tamanho, genero, condicao } = req.query
-    const limite = Math.min(parseInt(req.query.limite) || 20, 50)
+    const limite = Math.min(parseInt(req.query.limite) || 20, 100)
     const pagina = Math.max(parseInt(req.query.pagina) || 1, 1)
 
-    const filtros = ['p.sold = FALSE']
+    // vendidas=1 inclui peças já vendidas (usado pelo painel admin)
+    const filtros = req.query.vendidas === '1' ? ['TRUE'] : ['p.sold = FALSE']
     const valores = []
 
     if (categoria) {
