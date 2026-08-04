@@ -12,10 +12,27 @@ dotenv.config()
 
 const app = express()
 
-app.use(cors({ origin: process.env.FRONTEND_URL }))
+// A Vercel gera uma URL nova a cada preview, então além do domínio de
+// produção aceitamos os previews do próprio projeto e o ambiente local.
+const ORIGENS_FIXAS = (process.env.FRONTEND_URL ?? '')
+  .split(',').map(o => o.trim()).filter(Boolean)
+
+const PREVIEW_VERCEL = /^https:\/\/tropia-brecho[a-z0-9-]*\.vercel\.app$/
+const LOCAL = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/
+
+app.use(cors({
+  origin(origin, callback) {
+    // Sem origin: curl, healthcheck do Railway, webhook do Mercado Pago
+    if (!origin) return callback(null, true)
+    const liberado = ORIGENS_FIXAS.includes(origin)
+      || PREVIEW_VERCEL.test(origin)
+      || LOCAL.test(origin)
+    callback(liberado ? null : new Error(`Origem não autorizada: ${origin}`), liberado)
+  },
+}))
+
 app.use(express.json())
 
-// Rotas
 app.use('/api/produtos',    produtosRouter)
 app.use('/api/pedidos',     pedidosRouter)
 app.use('/api/pagamentos',  pagamentosRouter)
@@ -23,7 +40,16 @@ app.use('/api/auth',        authRouter)
 app.use('/api/categorias',  categoriasRouter)
 app.use('/api/cupons',      cuponsRouter)
 
-app.get('/api/health', (_, res) => res.json({ status: 'ok', app: 'Tropia Brechó' }))
+app.get('/api/health', (_req, res) => res.json({ status: 'ok', app: 'Tropia Brechó' }))
+
+app.use((_req, res) => res.status(404).json({ erro: 'Rota não encontrada' }))
+
+// Sem isto, um erro de CORS viraria uma resposta HTML de stack trace
+app.use((err, _req, res, _next) => {
+  console.error(err)
+  const status = err.message?.startsWith('Origem não autorizada') ? 403 : 500
+  res.status(status).json({ erro: status === 403 ? 'Origem não autorizada' : 'Erro interno' })
+})
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => console.log(`🛍️  Tropia API rodando na porta ${PORT}`))
