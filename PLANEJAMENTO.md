@@ -51,18 +51,19 @@ Marcar `[x]` ao concluir.
 
 ## Tarefas
 
-### 1. Deploy do backend no Railway
-**Bloqueada:** depende de passos no painel do Railway (Vitor).
+### 1. Deploy do backend no Railway ✅
 
-- [ ] Criar serviço a partir do GitHub, root directory `backend`
-- [ ] Variáveis: `DATABASE_URL=${{Postgres.DATABASE_URL}}`, `JWT_SECRET` (copiar
-      de `backend/.env`), `FRONTEND_URL=https://tropia-brecho.vercel.app`
-- [ ] Gerar domínio público
-- [ ] Configurar `VITE_API_URL` na Vercel e redeploy
-- [ ] Conferir no celular: peças reais aparecendo
+- [x] Serviço a partir do GitHub, root directory `backend`
+- [x] Variáveis: `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`, `PORT=8080`
+- [x] Domínio: https://tropia-brecho-production.up.railway.app
+- [x] `VITE_API_URL` na Vercel + redeploy
+- [ ] Apagar o serviço Postgres vazio que sobrou
 
-**Por que importa:** hoje tudo que foi construído só existe na máquina local.
-No celular, o site ainda mostra peças de exemplo.
+**Pegadinhas encontradas, para não repetir:**
+- Root Directory precisa ser `backend`, senão o Railpack olha a raiz do repo
+- Rede interna do Railway não aceita TLS; só o proxy público aceita
+- Hoje aponta para a URL **pública** do banco. Depois de apagar o Postgres
+  vazio, dá para voltar à interna, que é mais rápida
 
 ---
 
