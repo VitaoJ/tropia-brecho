@@ -67,9 +67,10 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando }) {
   const rotulo = ROTULO
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onFechar}>
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center md:p-4" onClick={onFechar}>
       <form onSubmit={submit} onClick={(e) => e.stopPropagation()}
-        className="bg-[#f2ead9] border border-[#d6c8b3] rounded-sm p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col gap-3">
+        className="bg-[#f2ead9] md:border border-[#d6c8b3] rounded-t-xl md:rounded-sm p-5 md:p-6 w-full max-w-lg max-h-[92vh] md:max-h-[90vh] overflow-y-auto flex flex-col gap-3">
+        <div className="w-10 h-1 rounded-full bg-[#d6c8b3] mx-auto mb-2 md:hidden" />
         <h2 className="text-lg text-[#250000] mb-1">
           {inicial.name ? 'Editar peça' : 'Nova peça'}
         </h2>
@@ -79,7 +80,7 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando }) {
           <input className={input} value={form.name} onChange={campo('name')} required />
         </label>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <label className="flex flex-col gap-1">
             <span className={rotulo}>Preço (R$) *</span>
             <input className={input} type="number" step="0.01" min="0" value={form.price} onChange={campo('price')} required />
@@ -89,24 +90,26 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando }) {
             <input className={input} type="number" step="0.01" min="0" value={form.original_price}
               onChange={campo('original_price')} placeholder="opcional" />
           </label>
-          <label className="flex flex-col gap-1">
+          <label className="flex flex-col gap-1 col-span-2 md:col-span-1">
             <span className={rotulo}>Tamanho</span>
             <input className={input} value={form.size} onChange={campo('size')} placeholder="P, M, G, 38, 41..." />
           </label>
         </div>
 
         {/* Atalho de desconto */}
-        <div className="flex items-center gap-2 bg-[#eae1d4] border border-[#d6c8b3] rounded-sm px-3 py-2">
-          <span className="text-xs text-[#654a2b] flex-none">Aplicar desconto de</span>
-          <input type="number" min="1" max="90" value={percentual} onChange={(e) => setPercentual(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); aplicarPercentual() } }}
-            className="w-16 h-8 px-2 bg-[#f2ead9] border border-[#d6c8b3] rounded-sm text-sm text-center outline-none focus:border-[#654a2b]" />
-          <span className="text-xs text-[#654a2b] flex-none">%</span>
-          <button type="button" onClick={aplicarPercentual}
-            className="h-8 px-3 bg-[#ffc509] text-[#250000] text-xs tracking-[0.1em] font-medium rounded-sm flex-none">
-            APLICAR
-          </button>
-          <span className="flex-1 text-right text-xs">
+        <div className="bg-[#eae1d4] border border-[#d6c8b3] rounded-sm px-3 py-2.5 flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[#654a2b] flex-none">Aplicar desconto de</span>
+            <input type="number" min="1" max="90" value={percentual} onChange={(e) => setPercentual(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); aplicarPercentual() } }}
+              className="w-14 h-8 px-2 bg-[#f2ead9] border border-[#d6c8b3] rounded-sm text-sm text-center outline-none focus:border-[#654a2b]" />
+            <span className="text-xs text-[#654a2b] flex-none">%</span>
+            <button type="button" onClick={aplicarPercentual}
+              className="h-8 px-3 bg-[#ffc509] text-[#250000] text-xs tracking-[0.1em] font-medium rounded-sm flex-none ml-auto">
+              APLICAR
+            </button>
+          </div>
+          <span className="text-xs">
             {precoInvalido
               ? <span className="text-[#c44b00]">O preço antes precisa ser maior que o atual</span>
               : desconto
@@ -118,7 +121,7 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando }) {
           </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <label className="flex flex-col gap-1">
             <span className={rotulo}>Categoria</span>
             <select className={input} value={form.category_id} onChange={campo('category_id')}>
@@ -184,9 +187,10 @@ function FormCupom({ onSalvar, onFechar, salvando }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onFechar}>
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center md:p-4" onClick={onFechar}>
       <form onSubmit={submit} onClick={(e) => e.stopPropagation()}
-        className="bg-[#f2ead9] border border-[#d6c8b3] rounded-sm p-6 w-full max-w-md flex flex-col gap-3">
+        className="bg-[#f2ead9] md:border border-[#d6c8b3] rounded-t-xl md:rounded-sm p-5 md:p-6 w-full max-w-md max-h-[92vh] overflow-y-auto flex flex-col gap-3">
+        <div className="w-10 h-1 rounded-full bg-[#d6c8b3] mx-auto mb-2 md:hidden" />
         <h2 className="text-lg text-[#250000] mb-1">
           Novo cupom
         </h2>
@@ -284,16 +288,16 @@ function SecaoCupons({ token, onErro }) {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between gap-3 mb-5 md:mb-6">
         <div>
-          <h1 className="text-2xl text-[#250000]">Cupons</h1>
+          <h1 className="text-xl md:text-2xl text-[#250000]">Cupons</h1>
           <p className="text-xs text-[#654a2b] mt-0.5">
             {cupons.length} cadastrados · {cupons.filter(c => c.active).length} ativos
           </p>
         </div>
         <button onClick={() => setModal(true)}
-          className="h-10 px-5 bg-[#ffc509] text-[#250000] text-xs tracking-[0.14em] font-medium rounded-sm">
-          + NOVO CUPOM
+          className="h-10 px-4 md:px-5 bg-[#ffc509] text-[#250000] text-xs tracking-[0.14em] font-medium rounded-sm flex-none">
+          + NOVO
         </button>
       </div>
 
@@ -302,7 +306,38 @@ function SecaoCupons({ token, onErro }) {
       ) : cupons.length === 0 ? (
         <p className="text-sm text-[#654a2b]">Nenhum cupom criado ainda.</p>
       ) : (
-        <div className="border border-[#d6c8b3] rounded-sm overflow-hidden">
+        <>
+        {/* Mobile: cartões, porque a tabela não cabe em 375px */}
+        <div className="md:hidden flex flex-col gap-3">
+          {cupons.map(c => (
+            <div key={c.id} className="border border-[#d6c8b3] rounded-sm bg-[#f2ead9] p-4">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <p className="font-medium tracking-[0.08em] text-[#250000]">{c.code}</p>
+                  <p className="text-xs text-[#654a2b] mt-0.5">
+                    {c.discount_percent}% · {c.uses}{c.max_uses != null ? ` de ${c.max_uses}` : ''} uso(s)
+                  </p>
+                </div>
+                <span className={`text-[10px] tracking-[0.1em] px-2 py-1 rounded-full flex-none ${c.active ? 'bg-[#d8f3dc] text-[#2d6a4f]' : 'bg-[#d6c8b3] text-[#654a2b]'}`}>
+                  {c.active ? 'ATIVO' : 'INATIVO'}
+                </span>
+              </div>
+              <p className="text-xs text-[#654a2b] mb-3">Validade: {validade(c)}</p>
+              <div className="flex gap-2 text-xs">
+                <button onClick={() => alternar(c)}
+                  className="flex-1 h-9 border border-[#d6c8b3] rounded-sm">
+                  {c.active ? 'Desativar' : 'Ativar'}
+                </button>
+                <button onClick={() => remover(c)}
+                  className="flex-1 h-9 border border-[#c44b00] text-[#c44b00] rounded-sm">
+                  Excluir
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="hidden md:block border border-[#d6c8b3] rounded-sm overflow-hidden">
           <table className="w-full text-sm text-[#250000]">
             <thead>
               <tr className="bg-[#ddcfb9] text-left text-xs text-[#654a2b]">
@@ -343,6 +378,7 @@ function SecaoCupons({ token, onErro }) {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {modal && <FormCupom onSalvar={salvar} onFechar={() => setModal(false)} salvando={salvando} />}
@@ -431,52 +467,111 @@ export default function Dashboard() {
 
   const disponiveis = pecas.filter(p => !p.sold).length
 
+  const SECOES = [['estoque', 'ESTOQUE'], ['cupons', 'CUPONS']]
+
   return (
-    <div className="min-h-screen bg-[#eae1d4] flex">
-      {/* Sidebar */}
-      <aside className="w-56 flex-none bg-[#250000] text-[#eae1d4] flex flex-col">
-        <div className="flex items-center gap-3 px-5 h-16 border-b border-[#432d1c]">
-          <img src={logoSimbolo} alt="Tropia" className="h-8 w-8 object-contain invert" />
+    <div className="min-h-screen bg-[#eae1d4] md:flex">
+      {/* Topo escuro no mobile; no desktop vira a coluna lateral */}
+      <aside className="md:w-56 md:flex-none bg-[#250000] text-[#eae1d4] flex md:flex-col md:min-h-screen
+        sticky top-0 z-40 items-center md:items-stretch justify-between md:justify-start px-4 md:px-0 h-14 md:h-auto">
+        <div className="flex items-center gap-3 md:px-5 md:h-16 md:border-b border-[#432d1c]">
+          <img src={logoSimbolo} alt="Tropia" className="h-7 w-7 md:h-8 md:w-8 object-contain invert" />
           <span className="text-sm tracking-[0.2em]">TROPIA</span>
         </div>
-        <nav className="flex flex-col py-4 text-xs tracking-[0.1em] flex-1">
-          {[['estoque', 'ESTOQUE'], ['cupons', 'CUPONS']].map(([id, label]) => (
+
+        {/* Seções: abas no mobile, lista no desktop */}
+        <nav className="flex md:flex-col md:py-4 text-xs tracking-[0.1em] md:flex-1 gap-1 md:gap-0">
+          {SECOES.map(([id, label]) => (
             <button key={id} onClick={() => setSecao(id)}
-              className={`px-5 py-3 text-left border-l-2 ${secao === id ? 'bg-[#432d1c] border-[#ffc509]' : 'border-transparent opacity-70 hover:opacity-100'}`}>
+              className={`px-3 md:px-5 py-1.5 md:py-3 text-left rounded-sm md:rounded-none md:border-l-2 ${
+                secao === id
+                  ? 'bg-[#432d1c] md:border-[#ffc509]'
+                  : 'md:border-transparent opacity-70 hover:opacity-100'
+              }`}>
               {label}
             </button>
           ))}
-          <span className="px-5 py-3 opacity-40 cursor-not-allowed">VISÃO GERAL — em breve</span>
-          <span className="px-5 py-3 opacity-40 cursor-not-allowed">PEDIDOS — em breve</span>
-          <span className="px-5 py-3 opacity-40 cursor-not-allowed">RELATÓRIOS — em breve</span>
+          <span className="hidden md:block px-5 py-3 opacity-40 cursor-not-allowed">VISÃO GERAL — em breve</span>
+          <span className="hidden md:block px-5 py-3 opacity-40 cursor-not-allowed">PEDIDOS — em breve</span>
+          <span className="hidden md:block px-5 py-3 opacity-40 cursor-not-allowed">RELATÓRIOS — em breve</span>
         </nav>
-        <button onClick={sair} className="px-5 py-4 text-left text-xs tracking-[0.1em] opacity-70 hover:opacity-100 border-t border-[#432d1c]">
+
+        <button onClick={sair}
+          className="text-xs tracking-[0.1em] opacity-70 hover:opacity-100 md:px-5 md:py-4 md:text-left md:border-t border-[#432d1c]">
           SAIR
         </button>
       </aside>
 
       {/* Conteúdo */}
-      <main className="flex-1 p-8 overflow-x-auto">
+      <main className="flex-1 min-w-0 p-4 md:p-8">
         {erro && <p className="text-xs text-[#c44b00] bg-[#ffe0cc] px-3 py-2 rounded-sm mb-4">{erro}</p>}
 
         {secao === 'cupons' ? <SecaoCupons token={token} onErro={setErro} /> : <>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between gap-3 mb-5 md:mb-6">
           <div>
-            <h1 className="text-2xl text-[#250000]">Estoque</h1>
+            <h1 className="text-xl md:text-2xl text-[#250000]">Estoque</h1>
             <p className="text-xs text-[#654a2b] mt-0.5">
-              {pecas.length} peças cadastradas · {disponiveis} disponíveis · {pecas.length - disponiveis} vendidas
+              {pecas.length} peças · {disponiveis} disponíveis · {pecas.length - disponiveis} vendidas
             </p>
           </div>
           <button onClick={() => setModal({ id: null, inicial: FORM_VAZIO })}
-            className="h-10 px-5 bg-[#ffc509] text-[#250000] text-xs tracking-[0.14em] font-medium rounded-sm">
-            + NOVA PEÇA
+            className="h-10 px-4 md:px-5 bg-[#ffc509] text-[#250000] text-xs tracking-[0.14em] font-medium rounded-sm flex-none">
+            + NOVA
           </button>
         </div>
 
         {carregando ? (
           <p className="text-xs text-[#654a2b] tracking-[0.2em] uppercase">Carregando...</p>
         ) : (
-          <div className="border border-[#d6c8b3] rounded-sm overflow-hidden">
+          <>
+          {/* Mobile: cartões, porque a tabela tem 7 colunas e não cabe */}
+          <div className="md:hidden flex flex-col gap-3">
+            {pecas.map(p => {
+              const d = calcularDesconto(p.price, p.original_price)
+              return (
+                <div key={p.id} className="border border-[#d6c8b3] rounded-sm bg-[#f2ead9] p-3">
+                  <div className="flex gap-3">
+                    <div className="w-16 h-20 rounded-sm bg-[#d6c8b3] flex-none overflow-hidden">
+                      {p.images?.[0] && <img src={p.images[0]} alt="" className="w-full h-full object-cover" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-[#250000] leading-tight">{p.name}</p>
+                        <span className={`text-[9px] tracking-[0.1em] px-2 py-0.5 rounded-full flex-none ${p.sold ? 'bg-[#d6c8b3] text-[#654a2b]' : 'bg-[#d8f3dc] text-[#2d6a4f]'}`}>
+                          {p.sold ? 'VENDIDA' : 'DISPONÍVEL'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#654a2b] mt-1 capitalize">
+                        {[p.categoria, p.size && `Tam. ${p.size}`, p.condition].filter(Boolean).join(' · ')}
+                      </p>
+                      <div className="flex items-baseline gap-1.5 mt-1">
+                        {d && <span className="line-through text-[#654a2b] text-xs">{formatarPreco(d.precoAntes)}</span>}
+                        <span className="text-[#250000] font-medium">{formatarPreco(p.price)}</span>
+                        {d && (
+                          <span className="text-[9px] bg-[#ffc509] text-[#250000] px-1.5 py-0.5 rounded-sm font-medium">
+                            −{d.percentual}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 text-xs mt-3">
+                    <button onClick={() => abrirEdicao(p)} className="flex-1 h-9 border border-[#d6c8b3] rounded-sm">
+                      Editar
+                    </button>
+                    <button onClick={() => alternarVendida(p)} className="flex-1 h-9 border border-[#d6c8b3] rounded-sm">
+                      {p.sold ? 'Repor' : 'Vender'}
+                    </button>
+                    <button onClick={() => excluir(p)} className="flex-1 h-9 border border-[#c44b00] text-[#c44b00] rounded-sm">
+                      Excluir
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="hidden md:block border border-[#d6c8b3] rounded-sm overflow-x-auto">
             <table className="w-full text-sm text-[#250000]">
               <thead>
                 <tr className="bg-[#ddcfb9] text-left text-xs text-[#654a2b]">
@@ -540,6 +635,7 @@ export default function Dashboard() {
               </tbody>
             </table>
           </div>
+          </>
         )}
         </>}
       </main>
