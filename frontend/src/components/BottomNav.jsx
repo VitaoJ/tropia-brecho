@@ -29,13 +29,12 @@ export default function BottomNav() {
             className="flex flex-col items-center gap-0.5 pt-2 pb-1 px-3 relative">
             {icones[item.icone](ativo)}
             {item.path === '/carrinho' && quantidade > 0 && (
-              <span className="absolute top-1 right-1.5 min-w-[15px] h-[15px] px-1 flex items-center justify-center rounded-full bg-[#ffc509] text-[#250000] text-[9px] font-medium"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <span className="absolute top-1 right-1.5 min-w-[15px] h-[15px] px-1 flex items-center justify-center rounded-full bg-[#ffc509] text-[#250000] text-[9px] font-medium">
                 {quantidade}
               </span>
             )}
             <span className="text-[9px] tracking-[0.1em]"
-              style={{ fontFamily: "'DM Sans', sans-serif", color: ativo ? '#250000' : '#654a2b' }}>
+              style={{ color: ativo ? '#250000' : '#654a2b' }}>
               {item.label}
             </span>
           </Link>

@@ -27,8 +27,7 @@ export default function Navbar() {
           className="md:hidden h-7 object-contain absolute left-1/2 -translate-x-1/2" />
 
         {/* Links — só no desktop, onde não existe a barra inferior */}
-        <div className="hidden md:flex items-center gap-8 text-xs tracking-[0.16em]"
-          style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <div className="hidden md:flex items-center gap-8 text-xs tracking-[0.16em]">
           {LINKS.map(l => (
             <Link key={l.path} to={l.path}
               className={`uppercase transition-colors ${pathname === l.path ? 'text-[#250000]' : 'text-[#654a2b] hover:text-[#250000]'}`}>
@@ -48,8 +47,7 @@ export default function Navbar() {
               <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
             </svg>
             {quantidade > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-[#ffc509] text-[#250000] text-[9px] font-medium"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-[#ffc509] text-[#250000] text-[9px] font-medium">
                 {quantidade}
               </span>
             )}

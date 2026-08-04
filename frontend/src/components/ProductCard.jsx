@@ -41,8 +41,7 @@ export default function ProductCard({ produto, aoRemover }) {
         </button>
       </div>
 
-      <p className="text-[#250000] leading-tight text-[0.95rem] md:text-base"
-        style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+      <p className="text-[#250000] leading-tight text-[0.95rem] md:text-base">
         {produto.nome}
       </p>
       <div className="flex items-baseline justify-between gap-2 mt-0.5">

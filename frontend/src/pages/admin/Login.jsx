@@ -29,8 +29,7 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-[#eae1d4] flex items-center justify-center px-4"
-      style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen bg-[#eae1d4] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logos */}
         <div className="flex flex-col items-center gap-3 mb-8">

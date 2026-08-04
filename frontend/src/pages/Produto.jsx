@@ -123,13 +123,11 @@ function Preco({ preco, desconto }) {
     <div className="flex flex-col gap-1.5">
       <div className="flex items-baseline gap-2 flex-wrap">
         {desconto && (
-          <span className="text-base md:text-lg text-[#654a2b] line-through"
-            style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+          <span className="text-base md:text-lg text-[#654a2b] line-through">
             {formatarPreco(desconto.precoAntes)}
           </span>
         )}
-        <span className="text-2xl md:text-4xl font-medium text-[#250000]"
-          style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+        <span className="text-2xl md:text-4xl font-medium text-[#250000]">
           {formatarPreco(preco)}
         </span>
         {desconto && (
@@ -298,8 +296,7 @@ export default function Produto() {
                 </span>
               ))}
             </div>
-            <h1 className="text-2xl md:text-4xl font-medium text-[#250000] leading-tight"
-              style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            <h1 className="text-2xl md:text-4xl font-medium text-[#250000] leading-tight">
               {produto.nome}
             </h1>
             {produto.marca && <p className="text-xs md:text-sm text-[#654a2b] mt-0.5">{produto.marca}</p>}

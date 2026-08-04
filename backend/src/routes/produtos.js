@@ -54,6 +54,22 @@ router.get('/', async (req, res) => {
   }
 })
 
+// GET /api/produtos/filtros — valores que existem no estoque disponível.
+// Precisa vir antes de /:id, senão "filtros" seria lido como um id.
+router.get('/filtros', async (_req, res) => {
+  try {
+    const { rows } = await query(
+      `SELECT
+         ARRAY(SELECT DISTINCT size   FROM products WHERE sold = FALSE AND size   IS NOT NULL ORDER BY size)   AS tamanhos,
+         ARRAY(SELECT DISTINCT gender FROM products WHERE sold = FALSE AND gender IS NOT NULL ORDER BY gender) AS generos`
+    )
+    res.json(rows[0])
+  } catch (err) {
+    console.error('GET /produtos/filtros:', err)
+    res.status(500).json({ erro: 'Erro ao buscar filtros' })
+  }
+})
+
 // GET /api/produtos/:id — detalhe + similares
 router.get('/:id', async (req, res) => {
   try {

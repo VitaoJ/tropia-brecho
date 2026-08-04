@@ -53,8 +53,7 @@ function Hero() {
                 <span className="block text-[10px] md:text-xs tracking-[0.28em] mb-2 md:mb-4 opacity-70">
                   {s.label}
                 </span>
-                <h2 className="text-4xl md:text-6xl lg:text-7xl font-medium leading-[1.05] whitespace-pre-line mb-2 md:mb-4"
-                  style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                <h2 className="text-4xl md:text-6xl lg:text-7xl font-medium leading-[1.05] whitespace-pre-line mb-2 md:mb-4">
                   {s.titulo}
                 </h2>
                 <p className="text-xs md:text-base mb-5 md:mb-8 opacity-70">{s.sub}</p>
@@ -107,8 +106,7 @@ function Categorias() {
           <Link key={c.slug} to={`/catalogo?categoria=${c.slug}`}
             className="rounded-sm flex items-end px-4 md:px-6 py-5 md:py-8 min-h-[100px] md:min-h-[200px] transition-opacity hover:opacity-90"
             style={{ background: c.bg }}>
-            <span className="text-[1.1rem] md:text-2xl font-medium text-[#250000]"
-              style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            <span className="text-[1.1rem] md:text-2xl font-medium text-[#250000]">
               {c.nome}
             </span>
           </Link>

@@ -12,10 +12,43 @@
   --tropia-accent: #ffc509;
 }
 
+/* Tipografia — Franklin Gothic.
+   Hoje usa a Libre Franklin (Google Fonts), revival open source do desenho
+   original da ATF. Se a licença da ATF Franklin Gothic for comprada, basta
+   colocar os arquivos em src/assets/fontes/ e descomentar os @font-face
+   abaixo: o resto do site não muda, todo mundo herda de body.
+
+@font-face {
+  font-family: 'ATF Franklin Gothic';
+  src: url('./assets/fontes/ATFFranklinGothic-Book.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ATF Franklin Gothic';
+  src: url('./assets/fontes/ATFFranklinGothic-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ATF Franklin Gothic';
+  src: url('./assets/fontes/ATFFranklinGothic-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+*/
+
 body {
   background-color: var(--tropia-bg);
   color: var(--tropia-dark);
+  font-family: 'ATF Franklin Gothic', 'Libre Franklin', 'Franklin Gothic Medium', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Sem o contraste serifado, a hierarquia vem do peso e do espacejamento */
+h1, h2, h3 {
+  letter-spacing: -0.015em;
 }
 
 /* Ticker infinito */

@@ -40,6 +40,11 @@ export function listarCategorias() {
   return get('/categorias')
 }
 
+// Tamanhos e gêneros que existem no estoque disponível
+export function listarFiltros() {
+  return get('/produtos/filtros')
+}
+
 /* ─── Admin ──────────────────────────────────────────────────── */
 export function loginAdmin(email, senha) {
   return req('/auth/login', { method: 'POST', body: { email, senha } })

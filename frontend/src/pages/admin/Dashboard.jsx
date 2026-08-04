@@ -70,7 +70,7 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando }) {
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onFechar}>
       <form onSubmit={submit} onClick={(e) => e.stopPropagation()}
         className="bg-[#f2ead9] border border-[#d6c8b3] rounded-sm p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col gap-3">
-        <h2 className="text-lg text-[#250000] mb-1" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+        <h2 className="text-lg text-[#250000] mb-1">
           {inicial.name ? 'Editar peça' : 'Nova peça'}
         </h2>
 
@@ -187,7 +187,7 @@ function FormCupom({ onSalvar, onFechar, salvando }) {
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onFechar}>
       <form onSubmit={submit} onClick={(e) => e.stopPropagation()}
         className="bg-[#f2ead9] border border-[#d6c8b3] rounded-sm p-6 w-full max-w-md flex flex-col gap-3">
-        <h2 className="text-lg text-[#250000] mb-1" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+        <h2 className="text-lg text-[#250000] mb-1">
           Novo cupom
         </h2>
 
@@ -286,7 +286,7 @@ function SecaoCupons({ token, onErro }) {
     <>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl text-[#250000]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Cupons</h1>
+          <h1 className="text-2xl text-[#250000]">Cupons</h1>
           <p className="text-xs text-[#654a2b] mt-0.5">
             {cupons.length} cadastrados · {cupons.filter(c => c.active).length} ativos
           </p>
@@ -432,12 +432,12 @@ export default function Dashboard() {
   const disponiveis = pecas.filter(p => !p.sold).length
 
   return (
-    <div className="min-h-screen bg-[#eae1d4] flex" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen bg-[#eae1d4] flex">
       {/* Sidebar */}
       <aside className="w-56 flex-none bg-[#250000] text-[#eae1d4] flex flex-col">
         <div className="flex items-center gap-3 px-5 h-16 border-b border-[#432d1c]">
           <img src={logoSimbolo} alt="Tropia" className="h-8 w-8 object-contain invert" />
-          <span className="text-sm tracking-[0.2em]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>TROPIA</span>
+          <span className="text-sm tracking-[0.2em]">TROPIA</span>
         </div>
         <nav className="flex flex-col py-4 text-xs tracking-[0.1em] flex-1">
           {[['estoque', 'ESTOQUE'], ['cupons', 'CUPONS']].map(([id, label]) => (
@@ -462,7 +462,7 @@ export default function Dashboard() {
         {secao === 'cupons' ? <SecaoCupons token={token} onErro={setErro} /> : <>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl text-[#250000]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Estoque</h1>
+            <h1 className="text-2xl text-[#250000]">Estoque</h1>
             <p className="text-xs text-[#654a2b] mt-0.5">
               {pecas.length} peças cadastradas · {disponiveis} disponíveis · {pecas.length - disponiveis} vendidas
             </p>
@@ -497,7 +497,7 @@ export default function Dashboard() {
                         <div className="w-9 h-11 rounded-sm bg-[#d6c8b3] flex-none overflow-hidden">
                           {p.images?.[0] && <img src={p.images[0]} alt="" className="w-full h-full object-cover" />}
                         </div>
-                        <span style={{ fontFamily: "'Cormorant Garamond', serif" }}>{p.name}</span>
+                        <span>{p.name}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-xs text-[#654a2b]">{p.categoria ?? '—'}</td>

@@ -16,8 +16,7 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['DM Sans', 'system-ui', 'sans-serif'],
-        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+        sans: ['ATF Franklin Gothic', 'Libre Franklin', 'Franklin Gothic Medium', 'system-ui', 'sans-serif'],
       }
     }
   },
