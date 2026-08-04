@@ -67,17 +67,19 @@ Marcar `[x]` ao concluir.
 
 ---
 
-### 2. Tela do carrinho
-A lógica já existe no `CartContext`; falta a interface.
+### 2. Tela do carrinho ✅
 
-- [ ] Lista de peças com foto, nome, tamanho, preço e remover
-- [ ] Resumo: subtotal, desconto de cupom, frete, total no cartão e no PIX
-- [ ] Campo de cupom usando `POST /api/cupons/validar`
-- [ ] Barra de progresso do frete grátis ("faltam R$ X")
-- [ ] Economia do PIX em reais
-- [ ] Aviso de peça única
-- [ ] Estado vazio
-- [ ] Cross-sell "combina com" (categoria diferente, mesmo gênero)
+- [x] Lista de peças com foto, nome, tamanho, preço e remover
+- [x] Resumo: subtotal, desconto de cupom, frete, total no cartão e no PIX
+- [x] Campo de cupom usando `POST /api/cupons/validar`
+- [x] Barra de progresso do frete grátis ("faltam R$ X")
+- [x] Economia do PIX em reais
+- [x] Aviso de peça única
+- [x] Estado vazio
+- [x] Cross-sell "combina com" (categoria diferente, mesmo gênero)
+
+**Decisão:** o frete grátis considera o valor **depois** do cupom. Trocar em
+`Carrinho.jsx`, no `valor` passado à `BarraFrete`, se preferir antes.
 
 ---
 

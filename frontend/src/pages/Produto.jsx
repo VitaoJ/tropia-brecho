@@ -201,6 +201,9 @@ function BotoesCompra({ produto, fixo }) {
       preco: produto.preco,
       tamanho: produto.tamanho,
       imagem: produto.fotos?.find(f => !f.startsWith('#')) ?? null,
+      // usados no "combina com" do carrinho
+      categoriaSlug: produto.categoriaSlug,
+      genero: produto.genero,
     })
   }
 
@@ -230,6 +233,8 @@ function mapear(p) {
     id: p.id,
     nome: p.name,
     marca: p.categoria ?? '',
+    categoriaSlug: p.categoria_slug ?? null,
+    genero: p.gender ?? null,
     tags: [p.categoria, p.gender, p.size ? `Tam. ${p.size}` : null].filter(Boolean),
     preco: Number(p.price),
     desconto: calcularDesconto(p.price, p.original_price),
