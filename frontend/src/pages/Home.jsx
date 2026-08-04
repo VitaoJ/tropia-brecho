@@ -53,7 +53,8 @@ function Hero() {
                 <span className="block text-[10px] md:text-xs tracking-[0.28em] mb-2 md:mb-4 opacity-70">
                   {s.label}
                 </span>
-                <h2 className="text-4xl md:text-6xl lg:text-7xl font-medium leading-[1.05] whitespace-pre-line mb-2 md:mb-4">
+                {/* Teste: peso máximo da Libre Franklin, itálico e bem apertado */}
+                <h2 className="text-4xl md:text-6xl lg:text-7xl font-black italic tracking-[-0.045em] leading-[1] whitespace-pre-line mb-2 md:mb-4">
                   {s.titulo}
                 </h2>
                 <p className="text-xs md:text-base mb-5 md:mb-8 opacity-70">{s.sub}</p>
