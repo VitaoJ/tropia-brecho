@@ -36,8 +36,8 @@ router.get('/', async (req, res) => {
     valores.push(limite, (pagina - 1) * limite)
 
     const { rows } = await query(
-      `SELECT p.id, p.name, p.description, p.price, p.size, p.gender, p.condition,
-              p.images, p.sold, p.category_id, p.created_at,
+      `SELECT p.id, p.name, p.description, p.price, p.original_price, p.size,
+              p.gender, p.condition, p.images, p.sold, p.category_id, p.created_at,
               c.name AS categoria, c.slug AS categoria_slug
        FROM products p
        LEFT JOIN categories c ON c.id = p.category_id
@@ -71,7 +71,7 @@ router.get('/:id', async (req, res) => {
 
     // Similares: mesma categoria + gênero, não vendidos, máx. 6
     const { rows: similares } = await query(
-      `SELECT id, name, price, size, images
+      `SELECT id, name, price, original_price, size, images
        FROM products
        WHERE category_id = $1 AND gender = $2 AND sold = FALSE AND id != $3
        ORDER BY created_at DESC
@@ -86,18 +86,36 @@ router.get('/:id', async (req, res) => {
   }
 })
 
+const CAMPOS = [
+  'name', 'description', 'price', 'original_price',
+  'category_id', 'size', 'gender', 'condition', 'images', 'sold',
+]
+
+// original_price é o preço "de" — só faz sentido acima do preço atual
+function validarDesconto(original_price, price) {
+  if (original_price == null) return null
+  if (price != null && Number(original_price) <= Number(price)) {
+    return 'O preço anterior precisa ser maior que o preço atual'
+  }
+  return null
+}
+
 // POST /api/produtos — criar peça (admin)
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const { name, description, price, category_id, size, gender, condition, images } = req.body
+    const { name, description, price, original_price, category_id, size, gender, condition, images } = req.body
     if (!name || !price) {
       return res.status(400).json({ erro: 'Nome e preço são obrigatórios' })
     }
+    const invalido = validarDesconto(original_price, price)
+    if (invalido) return res.status(400).json({ erro: invalido })
+
     const { rows } = await query(
-      `INSERT INTO products (name, description, price, category_id, size, gender, condition, images)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO products (name, description, price, original_price, category_id, size, gender, condition, images)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
-      [name, description ?? null, price, category_id ?? null, size ?? null, gender ?? null, condition ?? null, images ?? []]
+      [name, description ?? null, price, original_price ?? null, category_id ?? null,
+       size ?? null, gender ?? null, condition ?? null, images ?? []]
     )
     res.status(201).json({ produto: rows[0] })
   } catch (err) {
@@ -107,23 +125,30 @@ router.post('/', requireAdmin, async (req, res) => {
 })
 
 // PUT /api/produtos/:id — editar peça (admin)
+// Só atualiza os campos presentes no corpo, para que enviar null
+// signifique "limpar" (necessário para remover um desconto).
 router.put('/:id', requireAdmin, async (req, res) => {
   try {
-    const { name, description, price, category_id, size, gender, condition, images, sold } = req.body
+    const enviados = CAMPOS.filter(c => c in req.body)
+    if (enviados.length === 0) {
+      return res.status(400).json({ erro: 'Nenhum campo para atualizar' })
+    }
+
+    if ('original_price' in req.body) {
+      const precoAtual = 'price' in req.body
+        ? req.body.price
+        : (await query('SELECT price FROM products WHERE id = $1', [req.params.id])).rows[0]?.price
+      const invalido = validarDesconto(req.body.original_price, precoAtual)
+      if (invalido) return res.status(400).json({ erro: invalido })
+    }
+
+    const sets = enviados.map((campo, i) => `${campo} = $${i + 1}`)
+    const valores = enviados.map(campo => req.body[campo])
+    valores.push(req.params.id)
+
     const { rows } = await query(
-      `UPDATE products SET
-         name        = COALESCE($1, name),
-         description = COALESCE($2, description),
-         price       = COALESCE($3, price),
-         category_id = COALESCE($4, category_id),
-         size        = COALESCE($5, size),
-         gender      = COALESCE($6, gender),
-         condition   = COALESCE($7, condition),
-         images      = COALESCE($8, images),
-         sold        = COALESCE($9, sold)
-       WHERE id = $10
-       RETURNING *`,
-      [name, description, price, category_id, size, gender, condition, images, sold, req.params.id]
+      `UPDATE products SET ${sets.join(', ')} WHERE id = $${valores.length} RETURNING *`,
+      valores
     )
     if (rows.length === 0) {
       return res.status(404).json({ erro: 'Produto não encontrado' })

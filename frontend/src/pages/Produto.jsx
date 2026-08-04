@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useFavoritos } from '../context/FavoritosContext'
 import { buscarProduto } from '../services/api'
+import { formatarPreco, calcularDesconto, precoComPix } from '../utils/preco'
+import { useCart } from '../context/CartContext'
 
 /* ─── Mock data (substituir por fetch /api/produtos/:id) ─────── */
 const PRODUTO_MOCK = {
@@ -77,17 +79,29 @@ function CarrosselFotos({ fotos }) {
 }
 
 /* ─── Badge PIX ──────────────────────────────────────────────── */
-function BadgePix({ preco }) {
-  const precoPix = (preco * 0.95).toFixed(2)
+function BadgePix({ preco, desconto }) {
   return (
-    <div className="flex items-center gap-2 mt-1">
-      <span className="text-2xl font-medium text-[#250000]"
-        style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-        R$ {preco.toFixed(2).replace('.', ',')}
-      </span>
-      <span className="text-[10px] tracking-[0.12em] bg-[#ffc509] text-[#250000] px-2 py-0.5 rounded-sm font-medium"
-        style={{ fontFamily: "'DM Sans', sans-serif" }}>
-        PIX R$ {precoPix.replace('.', ',')} <span className="opacity-60">(-5%)</span>
+    <div className="flex flex-col gap-1.5 mt-1">
+      <div className="flex items-baseline gap-2 flex-wrap">
+        {desconto && (
+          <span className="text-base text-[#654a2b] line-through"
+            style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            {formatarPreco(desconto.precoAntes)}
+          </span>
+        )}
+        <span className="text-2xl font-medium text-[#250000]"
+          style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+          {formatarPreco(preco)}
+        </span>
+        {desconto && (
+          <span className="text-[10px] tracking-[0.12em] bg-[#ffc509] text-[#250000] px-2 py-0.5 rounded-sm font-medium"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            −{desconto.percentual}%
+          </span>
+        )}
+      </div>
+      <span className="text-xs text-[#654a2b]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        ou <strong className="text-[#250000] font-medium">{formatarPreco(precoComPix(preco))}</strong> no PIX (5% de desconto)
       </span>
     </div>
   )
@@ -183,9 +197,23 @@ function Similares({ items }) {
 }
 
 /* ─── CTA fixo ───────────────────────────────────────────────── */
-function CTAFixo({ produto, onAdd }) {
+function CTAFixo({ produto }) {
   const { toggle, isFavorito } = useFavoritos()
+  const { adicionar, temNoCarrinho } = useCart()
+  const navigate = useNavigate()
   const fav = isFavorito(produto.id)
+  const noCarrinho = temNoCarrinho(produto.id)
+
+  const handleAdd = () => {
+    if (noCarrinho) { navigate('/carrinho'); return }
+    adicionar({
+      id: produto.id,
+      nome: produto.nome,
+      preco: produto.preco,
+      tamanho: produto.tamanho,
+      imagem: produto.fotos?.find(f => !f.startsWith('#')) ?? null,
+    })
+  }
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#eae1d4] border-t border-[#d6c8b3] px-4 py-3 flex gap-3"
       style={{ maxWidth: 500, margin: '0 auto', left: 'inherit', right: 'inherit', width: '100%' }}>
@@ -197,10 +225,10 @@ function CTAFixo({ produto, onAdd }) {
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
       </button>
-      <button onClick={onAdd}
-        className="flex-1 h-12 bg-[#250000] text-[#eae1d4] text-xs tracking-[0.16em] rounded-sm active:opacity-80 transition-opacity"
+      <button onClick={handleAdd}
+        className={`flex-1 h-12 text-xs tracking-[0.16em] rounded-sm active:opacity-80 transition-opacity ${noCarrinho ? 'bg-[#ffc509] text-[#250000] font-medium' : 'bg-[#250000] text-[#eae1d4]'}`}
         style={{ fontFamily: "'DM Sans', sans-serif" }}>
-        ADICIONAR AO CARRINHO
+        {noCarrinho ? 'NO CARRINHO — VER' : 'ADICIONAR AO CARRINHO'}
       </button>
     </div>
   )
@@ -218,6 +246,7 @@ function mapearProduto(p) {
     marca: p.categoria ?? '',
     tags: [p.categoria, p.gender, p.size ? `Tam. ${p.size}` : null].filter(Boolean),
     preco: Number(p.price),
+    desconto: calcularDesconto(p.price, p.original_price),
     tamanho: p.size ?? '—',
     medidas: p.medidas ?? null,
     condicao: CONDICAO_LABEL[p.condition] ?? 'Bom',
@@ -254,11 +283,6 @@ export default function Produto() {
       })
       .finally(() => setCarregando(false))
   }, [id])
-
-  const handleAdd = () => {
-    // TODO: CartContext.addItem(produto)
-    alert('Adicionado ao carrinho!')
-  }
 
   if (carregando || !produto) {
     return (
@@ -314,7 +338,7 @@ export default function Produto() {
           <div className="border-t border-[#d6c8b3]" />
 
           {/* Preço + PIX */}
-          <BadgePix preco={produto.preco} />
+          <BadgePix preco={produto.preco} desconto={produto.desconto} />
 
           {/* Tamanho */}
           <div className="flex items-center gap-3">
@@ -367,7 +391,7 @@ export default function Produto() {
       </main>
 
       {/* CTA fixo */}
-      <CTAFixo produto={produto} onAdd={handleAdd} />
+      <CTAFixo produto={produto} />
     </div>
   )
 }

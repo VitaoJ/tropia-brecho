@@ -65,6 +65,27 @@ export function excluirProduto(id, token) {
   return req(`/produtos/${id}`, { method: 'DELETE', token })
 }
 
+/* ─── Cupons ─────────────────────────────────────────────────── */
+export function validarCupom(code) {
+  return req('/cupons/validar', { method: 'POST', body: { code } })
+}
+
+export function listarCupons(token) {
+  return req('/cupons', { token })
+}
+
+export function criarCupom(dados, token) {
+  return req('/cupons', { method: 'POST', body: dados, token })
+}
+
+export function atualizarCupom(id, dados, token) {
+  return req(`/cupons/${id}`, { method: 'PUT', body: dados, token })
+}
+
+export function excluirCupom(id, token) {
+  return req(`/cupons/${id}`, { method: 'DELETE', token })
+}
+
 // Formata "98.00" → "R$ 98,00"
 export function formatarPreco(valor) {
   return `R$ ${Number(valor).toFixed(2).replace('.', ',')}`

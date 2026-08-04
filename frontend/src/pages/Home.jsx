@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFavoritos } from '../context/FavoritosContext'
-import { listarProdutos, formatarPreco } from '../services/api'
+import { listarProdutos } from '../services/api'
+import { formatarPreco, calcularDesconto } from '../utils/preco'
 import logoSimbolo from '../assets/logo-simbolo.svg'
 import logoTexto from '../assets/logo-texto.svg'
 
@@ -167,6 +168,7 @@ function SecaoDestaques() {
           nome: p.name,
           tamanho: p.size ?? '—',
           preco: formatarPreco(p.price),
+          desconto: calcularDesconto(p.price, p.original_price),
           novo: ehNovo(p.created_at),
           imagem: p.images?.[0] ?? null,
         })))
@@ -186,8 +188,13 @@ function SecaoDestaques() {
               {p.imagem && (
                 <img src={p.imagem} alt={p.nome} className="absolute inset-0 w-full h-full object-cover" />
               )}
-              {p.novo && (
+              {p.desconto ? (
                 <span className="absolute top-2 left-2 text-[9px] tracking-[0.15em] bg-[#ffc509] text-[#250000] px-2 py-0.5 font-medium"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  −{p.desconto.percentual}%
+                </span>
+              ) : p.novo && (
+                <span className="absolute top-2 left-2 text-[9px] tracking-[0.15em] bg-[#250000] text-[#eae1d4] px-2 py-0.5"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}>
                   NOVO
                 </span>
@@ -207,8 +214,13 @@ function SecaoDestaques() {
               <span className="text-[10px] text-[#654a2b]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 Tam. {p.tamanho}
               </span>
-              <span className="text-xs font-medium text-[#250000]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                {p.preco}
+              <span className="flex items-baseline gap-1.5" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                {p.desconto && (
+                  <span className="text-[10px] text-[#654a2b] line-through">
+                    {formatarPreco(p.desconto.precoAntes)}
+                  </span>
+                )}
+                <span className="text-xs font-medium text-[#250000]">{p.preco}</span>
               </span>
             </div>
           </div>
