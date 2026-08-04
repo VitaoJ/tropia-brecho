@@ -58,3 +58,74 @@ h1, h2, h3 {
 }
 .ticker-animate { animation: ticker 20s linear infinite; }
 .ticker-animate-reverse { animation: ticker 24s linear infinite reverse; }
+
+/* ─── Textura ────────────────────────────────────────────────────
+   Grão sutil de papel: o acervo é físico, usado, impresso em fanzine.
+   Fica sobre o fundo sem interceptar cliques.                     */
+.grao::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23r)' opacity='0.28'/%3E%3C/svg%3E");
+}
+
+/* ─── Entrada ──────────────────────────────────────────────────── */
+@keyframes surgir {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes cortina {
+  from { transform: scaleY(1); }
+  to   { transform: scaleY(0); }
+}
+
+.surgir { animation: surgir 0.9s cubic-bezier(0.2, 0.75, 0.2, 1) both; }
+
+/* Revelado por IntersectionObserver ao entrar na tela.
+   Usa transition e não animation de propósito: o estado final é o padrão
+   do elemento, então conteúdo nunca fica presu invisível se a animação
+   não rodar (aba em segundo plano, motor de animação suspenso). */
+.revelar {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.8s cubic-bezier(0.2, 0.75, 0.2, 1),
+    transform 0.8s cubic-bezier(0.2, 0.75, 0.2, 1);
+  transition-delay: var(--atraso, 0ms);
+}
+.revelar[data-oculto='true'] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: none;
+}
+
+/* Linha que se estica sozinha, como régua de catálogo */
+@keyframes esticar {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.esticar { transform-origin: left; animation: esticar 1.1s cubic-bezier(0.2, 0.75, 0.2, 1) both; }
+
+/* Item do índice de categorias: a seta corre até a margem no hover */
+.indice-item .indice-seta { transition: transform 0.45s cubic-bezier(0.2, 0.75, 0.2, 1); }
+.indice-item:hover .indice-seta { transform: translateX(0.75rem); }
+.indice-item .indice-fundo {
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.45s cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+.indice-item:hover .indice-fundo { transform: scaleY(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .surgir, .esticar, .ticker-animate, .ticker-animate-reverse {
+    animation: none;
+  }
+  .revelar, .revelar[data-oculto='true'] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

@@ -1,7 +1,7 @@
 // Regras de preço e frete — mexer aqui muda o site inteiro.
 
 export const FRETE_FIXO = 14.90
-export const FRETE_GRATIS_ACIMA_DE = 250.00
+export const FRETE_GRATIS_ACIMA_DE = 150.00
 export const DESCONTO_PIX = 0.05
 
 export const formatarPreco = (valor) =>

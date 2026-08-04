@@ -39,7 +39,7 @@ Marcar `[x]` ao concluir.
 |---|---|
 | Cupom + PIX | Acumulam |
 | Cupom em peça com desconto | Vale |
-| Frete | R$ 14,90 fixo, grátis acima de R$ 250 |
+| Frete | R$ 14,90 fixo, grátis acima de R$ 150 |
 | Endereço | ViaCEP |
 | Checkout | Sem cadastro (convidado) |
 | Gateway | Mercado Pago — Checkout Pro primeiro, Bricks depois |
