@@ -107,7 +107,7 @@ function Categorias() {
           <Link key={c.slug} to={`/catalogo?categoria=${c.slug}`}
             className="rounded-sm flex items-end px-4 md:px-6 py-5 md:py-8 min-h-[100px] md:min-h-[200px] transition-opacity hover:opacity-90"
             style={{ background: c.bg }}>
-            <span className="text-[1.1rem] md:text-2xl font-medium text-[#250000]">
+            <span className="text-[1.1rem] md:text-2xl font-black italic tracking-[-0.045em] text-[#250000]">
               {c.nome}
             </span>
           </Link>
