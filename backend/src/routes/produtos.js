@@ -36,8 +36,9 @@ router.get('/', async (req, res) => {
     valores.push(limite, (pagina - 1) * limite)
 
     const { rows } = await query(
-      `SELECT p.id, p.name, p.price, p.size, p.gender, p.condition, p.images,
-              p.created_at, c.name AS categoria, c.slug AS categoria_slug
+      `SELECT p.id, p.name, p.description, p.price, p.size, p.gender, p.condition,
+              p.images, p.sold, p.category_id, p.created_at,
+              c.name AS categoria, c.slug AS categoria_slug
        FROM products p
        LEFT JOIN categories c ON c.id = p.category_id
        WHERE ${filtros.join(' AND ')}
