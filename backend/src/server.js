@@ -55,12 +55,17 @@ app.get('/api/health/db', async (_req, res) => {
       alvo = 'DATABASE_URL presente, mas não é uma URL válida'
     }
   }
+  // Só os nomes, para descobrir se a variável chegou e com que nome
+  const nomes = Object.keys(process.env)
+    .filter(k => /DATA|PG|POSTGRES|JWT|FRONT|PORT|RAILWAY_SERVICE/i.test(k))
+    .sort()
+
   try {
     const { pool } = await import('./db.js')
     const { rows } = await pool.query('SELECT COUNT(*)::int AS total FROM products')
-    res.json({ conectado: true, alvo, produtos: rows[0].total })
+    res.json({ conectado: true, alvo, produtos: rows[0].total, nomes })
   } catch (err) {
-    res.status(500).json({ conectado: false, alvo, erro: err.message, codigo: err.code })
+    res.status(500).json({ conectado: false, alvo, erro: err.message, codigo: err.code, nomes })
   }
 })
 
