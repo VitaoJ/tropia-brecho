@@ -23,3 +23,20 @@ export const precoComPix = (valor) => Number(valor) * (1 - DESCONTO_PIX)
 
 export const calcularFrete = (subtotal) =>
   subtotal >= FRETE_GRATIS_ACIMA_DE ? 0 : FRETE_FIXO
+
+const DIAS_PARA_DEIXAR_DE_SER_NOVO = 14
+
+// Formato que os cards do site esperam, vindo do formato da API
+export function normalizarProduto(p) {
+  return {
+    id: p.id,
+    nome: p.name,
+    preco: Number(p.price),
+    tamanho: p.size ?? null,
+    imagem: p.images?.[0] ?? null,
+    desconto: calcularDesconto(p.price, p.original_price),
+    novo: p.created_at
+      ? Date.now() - new Date(p.created_at).getTime() < DIAS_PARA_DEIXAR_DE_SER_NOVO * 86400000
+      : false,
+  }
+}

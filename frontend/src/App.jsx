@@ -8,31 +8,22 @@ import Favoritos  from './pages/Favoritos'
 import AdminLogin from './pages/admin/Login'
 import Dashboard  from './pages/admin/Dashboard'
 import ScrollToTop from './components/ScrollToTop'
-
-function MobileContainer({ children }) {
-  return (
-    <div className="min-h-screen bg-[#e0d4c2] flex justify-center">
-      <div className="w-full bg-[#eae1d4]" style={{ maxWidth: 500 }}>
-        {children}
-      </div>
-    </div>
-  )
-}
+import Layout from './components/Layout'
 
 export default function App() {
   return (
     <>
       <ScrollToTop />
       <Routes>
-        {/* Site público — centralizado em 500px */}
-        <Route path="/"            element={<MobileContainer><Home /></MobileContainer>} />
-        <Route path="/catalogo"    element={<MobileContainer><Catalogo /></MobileContainer>} />
-        <Route path="/produto/:id" element={<MobileContainer><Produto /></MobileContainer>} />
-        <Route path="/carrinho"    element={<MobileContainer><Carrinho /></MobileContainer>} />
-        <Route path="/checkout"    element={<MobileContainer><Checkout /></MobileContainer>} />
-        <Route path="/favoritos"   element={<MobileContainer><Favoritos /></MobileContainer>} />
+        {/* Site público — navbar no topo e, no mobile, barra inferior */}
+        <Route path="/"            element={<Layout><Home /></Layout>} />
+        <Route path="/catalogo"    element={<Layout><Catalogo /></Layout>} />
+        <Route path="/produto/:id" element={<Layout><Produto /></Layout>} />
+        <Route path="/carrinho"    element={<Layout><Carrinho /></Layout>} />
+        <Route path="/checkout"    element={<Layout><Checkout /></Layout>} />
+        <Route path="/favoritos"   element={<Layout><Favoritos /></Layout>} />
 
-        {/* Admin — sem container */}
+        {/* Admin — layout próprio */}
         <Route path="/admin"           element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<Dashboard />} />
       </Routes>
