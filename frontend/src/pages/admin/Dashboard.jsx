@@ -16,6 +16,10 @@ const CONDICOES = [
 ]
 const GENEROS = ['feminino', 'masculino', 'unissex']
 
+// O banco guarda 'otimo'; a tela mostra 'Ótimo'
+const rotuloCondicao = (valor) =>
+  CONDICOES.find(c => c.valor === valor)?.label ?? valor ?? '—'
+
 const FORM_VAZIO = {
   name: '', price: '', original_price: '', category_id: '', size: '',
   gender: 'feminino', condition: 'otimo', description: '', imagens: '',
@@ -541,8 +545,9 @@ export default function Dashboard() {
                           {p.sold ? 'VENDIDA' : 'DISPONÍVEL'}
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#654a2b] mt-1 capitalize">
-                        {[p.categoria, p.size && `Tam. ${p.size}`, p.condition].filter(Boolean).join(' · ')}
+                      <p className="text-[11px] text-[#654a2b] mt-1">
+                        {[p.categoria, p.size && `Tam. ${p.size}`, p.condition && rotuloCondicao(p.condition)]
+                          .filter(Boolean).join(' · ')}
                       </p>
                       <div className="flex items-baseline gap-1.5 mt-1">
                         {d && <span className="line-through text-[#654a2b] text-xs">{formatarPreco(d.precoAntes)}</span>}
@@ -611,7 +616,7 @@ export default function Dashboard() {
                         ) : formatarPreco(p.price)
                       })()}
                     </td>
-                    <td className="px-4 py-3 text-xs capitalize">{p.condition ?? '—'}</td>
+                    <td className="px-4 py-3 text-xs">{rotuloCondicao(p.condition)}</td>
                     <td className="px-4 py-3">
                       <span className={`text-[10px] tracking-[0.1em] px-2 py-1 rounded-full ${p.sold ? 'bg-[#d6c8b3] text-[#654a2b]' : 'bg-[#d8f3dc] text-[#2d6a4f]'}`}>
                         {p.sold ? 'VENDIDA' : 'DISPONÍVEL'}
