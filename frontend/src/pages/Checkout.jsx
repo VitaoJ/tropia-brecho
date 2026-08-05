@@ -10,6 +10,7 @@ import {
 } from '../utils/validacao'
 import Campo from '../components/checkout/Campo'
 import ContadorReserva from '../components/checkout/ContadorReserva'
+import { otimizar } from '../utils/imagem'
 
 const CONTAINER = 'max-w-5xl mx-auto px-4 md:px-8'
 const RASCUNHO = 'tropia_checkout'
@@ -71,7 +72,7 @@ function Resumo({ itens, cupom, subtotal, descontoCupom, frete, total, forma, ec
         {itens.map(item => (
           <li key={item.id} className="flex gap-2.5 items-center">
             <div className="w-11 h-14 rounded-sm bg-[#d6c8b3] flex-none overflow-hidden">
-              {item.imagem && <img src={item.imagem} alt="" className="w-full h-full object-cover" />}
+              {item.imagem && <img src={otimizar(item.imagem, 150)} alt="" className="w-full h-full object-cover" />}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[13px] text-[#250000] leading-tight truncate">{item.nome}</p>

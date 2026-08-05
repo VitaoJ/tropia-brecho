@@ -4,6 +4,7 @@ import { listarProdutos } from '../services/api'
 import { normalizarProduto, formatarPreco } from '../utils/preco'
 import ProductCard from '../components/ProductCard'
 import Revelar from '../components/Revelar'
+import { otimizar } from '../utils/imagem'
 
 const CONTAINER = 'max-w-6xl mx-auto px-4 md:px-8'
 
@@ -75,7 +76,7 @@ function Hero({ pecas, total }) {
                 className="surgir block relative group" style={{ animationDelay: '460ms' }}>
                 <div className="relative overflow-hidden bg-[#432d1c]" style={{ aspectRatio: '3/4' }}>
                   {destaque.imagem && (
-                    <img src={destaque.imagem} alt={destaque.nome}
+                    <img src={otimizar(destaque.imagem, 900)} alt={destaque.nome}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
                   )}
                 </div>

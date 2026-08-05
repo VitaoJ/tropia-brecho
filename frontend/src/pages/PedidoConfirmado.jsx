@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { buscarPedidoPublico } from '../services/api'
 import { formatarPreco } from '../utils/preco'
+import { otimizar } from '../utils/imagem'
 
 const CONTAINER = 'max-w-2xl mx-auto px-4 md:px-8'
 
@@ -79,7 +80,7 @@ export default function PedidoConfirmado() {
           {pedido.itens.map((item, i) => (
             <li key={i} className="flex gap-2.5 items-center">
               <div className="w-12 h-15 rounded-sm bg-[#d6c8b3] flex-none overflow-hidden" style={{ height: '3.75rem' }}>
-                {item.imagem && <img src={item.imagem} alt="" className="w-full h-full object-cover" />}
+                {item.imagem && <img src={otimizar(item.imagem, 150)} alt="" className="w-full h-full object-cover" />}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[14px] text-[#250000] leading-tight">{item.nome}</p>

@@ -7,6 +7,7 @@ import {
   FRETE_GRATIS_ACIMA_DE, DESCONTO_PIX,
 } from '../utils/preco'
 import ProductCard from '../components/ProductCard'
+import { otimizar } from '../utils/imagem'
 
 const CONTAINER = 'max-w-6xl mx-auto px-4 md:px-8'
 
@@ -170,7 +171,7 @@ export default function Carrinho() {
             <div key={item.id} className="flex gap-3 md:gap-4 border border-[#d6c8b3] rounded-sm p-3 bg-[#f2ead9]">
               <Link to={`/produto/${item.id}`}
                 className="w-20 h-24 md:w-24 md:h-32 rounded-sm bg-[#d6c8b3] flex-none overflow-hidden">
-                {item.imagem && <img src={item.imagem} alt={item.nome} className="w-full h-full object-cover" />}
+                {item.imagem && <img src={otimizar(item.imagem, 200)} alt={item.nome} className="w-full h-full object-cover" />}
               </Link>
 
               <div className="flex-1 min-w-0 flex flex-col">

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useFavoritos } from '../context/FavoritosContext'
 import { formatarPreco } from '../utils/preco'
+import { otimizar } from '../utils/imagem'
 
 // Favoritos antigos guardaram o preço já formatado; aceita os dois formatos.
 const exibirPreco = (valor) =>
@@ -14,7 +15,7 @@ export default function ProductCard({ produto, aoRemover }) {
     <Link to={`/produto/${produto.id}`} className="group block">
       <div className="relative rounded-sm mb-2 overflow-hidden bg-[#d6c8b3]" style={{ aspectRatio: '3/4' }}>
         {produto.imagem && (
-          <img src={produto.imagem} alt={produto.nome} loading="lazy"
+          <img src={otimizar(produto.imagem, 600)} alt={produto.nome} loading="lazy"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
         )}
 

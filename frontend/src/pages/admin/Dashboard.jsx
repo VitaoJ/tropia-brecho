@@ -7,6 +7,8 @@ import {
   listarCupons, criarCupom, atualizarCupom, excluirCupom,
 } from '../../services/api'
 import { formatarPreco, calcularDesconto } from '../../utils/preco'
+import { otimizar } from '../../utils/imagem'
+import GerenciadorFotos from './GerenciadorFotos'
 import logoSimbolo from '../../assets/logo-simbolo.svg'
 
 const CONDICOES = [
@@ -22,14 +24,14 @@ const rotuloCondicao = (valor) =>
 
 const FORM_VAZIO = {
   name: '', price: '', original_price: '', category_id: '', size: '',
-  gender: 'feminino', condition: 'otimo', description: '', imagens: '',
+  gender: 'feminino', condition: 'otimo', description: '', fotos: [],
 }
 
 const CAMPO = 'h-10 px-3 bg-[#eae1d4] border border-[#d6c8b3] rounded-sm text-sm text-[#250000] outline-none focus:border-[#654a2b] w-full'
 const ROTULO = 'text-xs text-[#654a2b]'
 
 /* ─── Formulário de peça (modal) ─────────────────────────────── */
-function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando }) {
+function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando, token }) {
   const [form, setForm] = useState(inicial)
   const [percentual, setPercentual] = useState('')
   const campo = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
@@ -63,7 +65,7 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando }) {
       gender: form.gender,
       condition: form.condition,
       description: form.description || null,
-      images: form.imagens.split('\n').map(u => u.trim()).filter(Boolean),
+      images: form.fotos,
     })
   }
 
@@ -152,11 +154,8 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando }) {
           <textarea className={`${input} h-24 py-2`} value={form.description} onChange={campo('description')} />
         </label>
 
-        <label className="flex flex-col gap-1">
-          <span className={rotulo}>Fotos — uma URL por linha (upload em breve)</span>
-          <textarea className={`${input} h-16 py-2`} value={form.imagens} onChange={campo('imagens')}
-            placeholder="https://..." />
-        </label>
+        <GerenciadorFotos token={token} fotos={form.fotos}
+          aoMudar={(atualizar) => setForm(f => ({ ...f, fotos: atualizar(f.fotos) }))} />
 
         <div className="flex gap-3 mt-2">
           <button type="button" onClick={onFechar}
@@ -465,7 +464,7 @@ export default function Dashboard() {
       name: p.name, price: p.price, original_price: p.original_price ?? '',
       category_id: p.category_id ?? '', size: p.size ?? '',
       gender: p.gender ?? 'feminino', condition: p.condition ?? 'otimo',
-      description: p.description ?? '', imagens: (p.images ?? []).join('\n'),
+      description: p.description ?? '', fotos: p.images ?? [],
     },
   })
 
@@ -536,7 +535,7 @@ export default function Dashboard() {
                 <div key={p.id} className="border border-[#d6c8b3] rounded-sm bg-[#f2ead9] p-3">
                   <div className="flex gap-3">
                     <div className="w-16 h-20 rounded-sm bg-[#d6c8b3] flex-none overflow-hidden">
-                      {p.images?.[0] && <img src={p.images[0]} alt="" className="w-full h-full object-cover" />}
+                      {p.images?.[0] && <img src={otimizar(p.images[0], 160)} alt="" className="w-full h-full object-cover" />}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
@@ -595,7 +594,7 @@ export default function Dashboard() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-11 rounded-sm bg-[#d6c8b3] flex-none overflow-hidden">
-                          {p.images?.[0] && <img src={p.images[0]} alt="" className="w-full h-full object-cover" />}
+                          {p.images?.[0] && <img src={otimizar(p.images[0], 100)} alt="" className="w-full h-full object-cover" />}
                         </div>
                         <span>{p.name}</span>
                       </div>
@@ -647,7 +646,7 @@ export default function Dashboard() {
 
       {modal && (
         <FormPeca inicial={modal.inicial} categorias={categorias}
-          onSalvar={salvar} onFechar={() => setModal(null)} salvando={salvando} />
+          onSalvar={salvar} onFechar={() => setModal(null)} salvando={salvando} token={token} />
       )}
     </div>
   )

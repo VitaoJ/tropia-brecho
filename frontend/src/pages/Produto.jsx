@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext'
 import { buscarProduto } from '../services/api'
 import { formatarPreco, calcularDesconto, precoComPix, normalizarProduto } from '../utils/preco'
 import ProductCard from '../components/ProductCard'
+import { otimizar } from '../utils/imagem'
 
 const CONTAINER = 'max-w-6xl mx-auto px-4 md:px-8'
 
@@ -66,7 +67,7 @@ function Galeria({ fotos, nome }) {
             <button key={i} onClick={() => setIdx(i)}
               className={`rounded-sm overflow-hidden transition-opacity ${idx === i ? 'ring-2 ring-[#250000]' : 'opacity-60 hover:opacity-100'}`}
               style={{ aspectRatio: '3/4', background: ehCor(f) ? f : '#d6c8b3' }}>
-              {!ehCor(f) && <img src={f} alt="" className="w-full h-full object-cover" />}
+              {!ehCor(f) && <img src={otimizar(f, 160)} alt="" className="w-full h-full object-cover" />}
             </button>
           ))}
         </div>
@@ -80,7 +81,7 @@ function Galeria({ fotos, nome }) {
           {fotos.map((f, i) => (
             ehCor(f)
               ? <div key={i} className="flex-none w-full h-full" style={{ background: f }} />
-              : <img key={i} src={f} alt={`${nome} — foto ${i + 1}`}
+              : <img key={i} src={otimizar(f, 1200)} alt={`${nome} — foto ${i + 1}`}
                   className="flex-none w-full h-full object-cover" />
           ))}
         </div>

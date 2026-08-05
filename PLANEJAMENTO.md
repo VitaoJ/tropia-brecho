@@ -185,13 +185,56 @@ estiver assim, todo pedido nasce `pending` e as peças ficam seguradas 30 min.
 
 ---
 
-### 7. Upload de fotos no admin
-Hoje a URL do Cloudinary é colada à mão.
+### 7. Upload de fotos no admin ✅
 
-- [ ] Upload direto no formulário da peça
-- [ ] Reordenar fotos (a primeira é a capa)
-- [ ] Remover foto
-- [ ] Compressão e conversão para webp
+- [x] Upload direto no formulário da peça, com barra de progresso
+- [x] Reordenar com setas (a primeira leva selo de CAPA)
+- [x] Remover foto
+- [x] Compressão antes de subir e webp na entrega
+- [x] Colar URL continua existindo, para as peças antigas
+- [ ] **Vitor: definir as 3 variáveis do Cloudinary** (ver abaixo)
+
+**Upload assinado, não preset público.** O Cloudinary aceita upload direto do
+navegador com "preset não assinado", mais simples — mas o preset ficaria
+visível no código do site e qualquer um poderia mandar arquivo para a conta,
+que é paga por armazenamento. Aqui o segredo fica no servidor: o painel pede
+uma assinatura (`POST /api/upload/assinatura`, só para admin logado) e o
+arquivo vai do celular direto para o Cloudinary, sem passar pelo Railway.
+
+**O que falta para funcionar** — três variáveis no Railway (e no `backend/.env`
+para testar local), tiradas de cloudinary.com → Settings → API Keys:
+
+| Variável | Onde achar |
+|---|---|
+| `CLOUDINARY_CLOUD_NAME` | já sabemos: `mvsuquav` |
+| `CLOUDINARY_API_KEY` | painel do Cloudinary |
+| `CLOUDINARY_API_SECRET` | painel do Cloudinary (é segredo, nunca no front) |
+
+Enquanto não estiverem definidas, o painel mostra o aviso e continua aceitando
+URL colada — nada quebra.
+
+**Peso das fotos, medido nas peças reais:**
+
+| | Tamanho |
+|---|---|
+| Original no Cloudinary | 4,9 MB |
+| Card do catálogo (`w_600`) | 32 KB |
+| Miniatura do painel (`w_300`) | 13 KB |
+
+O catálogo carrega 12 peças por página. Sem isso seriam ~59 MB por página no
+4G; agora são ~390 KB. A transformação vai na URL de entrega
+(`f_auto,q_auto,c_limit,w_N`), então o original fica intacto e cada tela pede o
+tamanho de que precisa.
+
+**Antes de subir, a foto é reduzida no navegador** para no máximo 2000px de
+lado. Foto de celular tem 4–8 MB e falha no meio pelo 4G da loja; reduzida vai
+em ~300 KB. O `imageOrientation: 'from-image'` não é enfeite: sem ele, foto
+tirada em pé sobe deitada, porque a rotação vive só no EXIF.
+
+⚠️ **Remover uma foto do formulário não apaga do Cloudinary**, só tira a
+referência — quem remove por engano e fecha sem salvar não perde nada. Existe
+`POST /api/upload/remover` para apagar de vez, restrito à pasta `tropia/pecas`
+para um id qualquer não apagar outra imagem da conta. Ainda não tem botão.
 
 ---
 

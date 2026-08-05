@@ -122,6 +122,61 @@ export function buscarPedidoPublico(id) {
   return get(`/pedidos/${id}/publico`)
 }
 
+/* ─── Upload de fotos ────────────────────────────────────────── */
+
+export function configUpload(token) {
+  return req('/upload/config', { token })
+}
+
+export function removerFoto(publicId, token) {
+  return req('/upload/remover', { method: 'POST', body: { public_id: publicId }, token })
+}
+
+/**
+ * Sobe a foto direto do navegador para o Cloudinary.
+ *
+ * O arquivo não passa pelo nosso servidor: pedimos só uma assinatura, e os
+ * bytes vão do celular do Vitor para o Cloudinary. Isso evita gastar memória
+ * e banda do Railway a cada foto.
+ *
+ * Usa XMLHttpRequest e não fetch porque é o único jeito de acompanhar o
+ * progresso do envio — numa foto pesada no 4G, a barra é a diferença entre
+ * esperar e achar que travou.
+ */
+export async function subirFoto(arquivo, token, aoProgredir) {
+  const { url, campos } = await req('/upload/assinatura', { method: 'POST', token })
+
+  const dados = new FormData()
+  Object.entries(campos).forEach(([k, v]) => dados.append(k, v))
+  dados.append('file', arquivo)
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', url)
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && aoProgredir) {
+        aoProgredir(Math.round((e.loaded / e.total) * 100))
+      }
+    }
+
+    xhr.onload = () => {
+      let corpo = {}
+      try { corpo = JSON.parse(xhr.responseText) } catch { /* resposta não-JSON */ }
+
+      if (xhr.status >= 200 && xhr.status < 300 && corpo.secure_url) {
+        resolve({ url: corpo.secure_url, publicId: corpo.public_id })
+      } else {
+        reject(new Error(corpo.error?.message ?? `Falha no upload (${xhr.status})`))
+      }
+    }
+    xhr.onerror = () => reject(new Error('Sem conexão com o Cloudinary'))
+    xhr.onabort = () => reject(new Error('Upload cancelado'))
+
+    xhr.send(dados)
+  })
+}
+
 /* ─── Cupons ─────────────────────────────────────────────────── */
 export function validarCupom(code) {
   return req('/cupons/validar', { method: 'POST', body: { code } })
