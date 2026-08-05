@@ -4,6 +4,7 @@ import Catalogo   from './pages/Catalogo'
 import Produto    from './pages/Produto'
 import Carrinho   from './pages/Carrinho'
 import Checkout   from './pages/Checkout'
+import PedidoConfirmado from './pages/PedidoConfirmado'
 import Favoritos  from './pages/Favoritos'
 import AdminLogin from './pages/admin/Login'
 import Dashboard  from './pages/admin/Dashboard'
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/produto/:id" element={<Layout><Produto /></Layout>} />
         <Route path="/carrinho"    element={<Layout><Carrinho /></Layout>} />
         <Route path="/checkout"    element={<Layout><Checkout /></Layout>} />
+        <Route path="/pedido/:id"  element={<Layout><PedidoConfirmado /></Layout>} />
         <Route path="/favoritos"   element={<Layout><Favoritos /></Layout>} />
 
         {/* Admin — layout próprio */}

@@ -148,12 +148,30 @@ o JavaScript dizia que ainda valia. Todas as colunas de instante viraram
 
 ---
 
-### 5. Checkout em 3 etapas
-- [ ] Etapa 1 — dados: nome, e-mail (primeiro campo, para recuperar abandono), CPF, telefone
-- [ ] Etapa 2 — endereço com ViaCEP preenchendo por CEP
-- [ ] Etapa 3 — pagamento
-- [ ] Resumo fixo do pedido em todas as etapas
-- [ ] Validação por etapa, sem deixar avançar incompleto
+### 5. Checkout em 3 etapas ✅
+
+- [x] Etapa 1 — dados: e-mail primeiro (para recuperar abandono), nome, CPF, telefone
+- [x] Etapa 2 — endereço com ViaCEP preenchendo por CEP
+- [x] Etapa 3 — escolha entre PIX e cartão, com o total de cada um
+- [x] Resumo fixo do pedido em todas as etapas
+- [x] Validação por etapa, sem deixar avançar incompleto
+- [x] Contador da reserva na tela (item que faltava da tarefa 4)
+- [x] Aviso quando uma peça cai no meio, com botão de tirar e seguir
+- [x] Rascunho do formulário no localStorage, sobrevive a recarregar
+- [x] Página `/pedido/:id` com o número do pedido e o resumo
+
+**Conferido no navegador, de ponta a ponta:** validação recusando CPF e e-mail
+inválidos, máscaras, ViaCEP preenchendo Avenida Paulista, contador reiniciando
+a cada etapa, pedido gravado com endereço e snapshot das peças, carrinho
+esvaziado, reserva estendida para 30 min. Também testei a peça sumindo no meio
+do checkout (baixa no painel com o cliente preenchendo): o pedido é barrado,
+o aviso diz qual peça e por quê, e "tirar do carrinho e seguir" fecha o pedido
+com o que sobrou.
+
+⚠️ **`PAGAMENTO_ATIVO = false` em `PedidoConfirmado.jsx`.** Enquanto o Mercado
+Pago não entra, o site cria o pedido mas ninguém consegue pagar — a tela diz
+isso e promete contato por e-mail. **Virar para `true` na tarefa 6.** Enquanto
+estiver assim, todo pedido nasce `pending` e as peças ficam seguradas 30 min.
 
 ---
 
