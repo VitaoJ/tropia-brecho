@@ -4,6 +4,10 @@ import { requireAdmin } from '../middlewares/auth.js'
 
 const router = Router()
 
+// Reserva vencida não conta: a peça volta a ficar livre sozinha, sem rotina
+// de limpeza. Quem pergunta é que ignora o prazo passado.
+const RESERVADA = '(p.reserved_until IS NOT NULL AND p.reserved_until > NOW())'
+
 // GET /api/produtos — listar peças disponíveis
 // Filtros via query string: ?categoria=feminino&tamanho=M&genero=feminino&limite=20&pagina=1
 router.get('/', async (req, res) => {
@@ -38,6 +42,7 @@ router.get('/', async (req, res) => {
     const { rows } = await query(
       `SELECT p.id, p.name, p.description, p.price, p.original_price, p.size,
               p.gender, p.condition, p.images, p.sold, p.category_id, p.created_at,
+              ${RESERVADA} AS reservada,
               c.name AS categoria, c.slug AS categoria_slug
        FROM products p
        LEFT JOIN categories c ON c.id = p.category_id
@@ -74,7 +79,8 @@ router.get('/filtros', async (_req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { rows } = await query(
-      `SELECT p.*, c.name AS categoria, c.slug AS categoria_slug
+      `SELECT p.*, ${RESERVADA} AS reservada,
+              c.name AS categoria, c.slug AS categoria_slug
        FROM products p
        LEFT JOIN categories c ON c.id = p.category_id
        WHERE p.id = $1`,

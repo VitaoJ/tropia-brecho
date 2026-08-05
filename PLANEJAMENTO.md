@@ -45,6 +45,8 @@ Marcar `[x]` ao concluir.
 | Gateway | Mercado Pago — Checkout Pro primeiro, Bricks depois |
 | Desconto PIX | 5%, acumulável |
 | Peça | Única, estoque 1 |
+| Reserva | 10 min preenchendo, 30 min com pedido criado |
+| Datas no banco | `TIMESTAMPTZ` — nunca `TIMESTAMP` (ver tarefa 4) |
 | Tipografia | Franklin Gothic (Libre Franklin até licenciar a ATF) |
 
 ---
@@ -111,18 +113,38 @@ painel. Vale criar um banco separado de teste quando sobrar tempo.
 
 ---
 
-### 4. Reserva de peça
-Duas pessoas podem comprar a mesma peça. Precisa resolver antes de cobrar.
+### 4. Reserva de peça ✅
 
-Confirmado na tarefa 3: o `FOR UPDATE` impede vender uma peça **já paga**, mas
-nada impede dois pedidos *pendentes* com a mesma peça. Quem pagar primeiro
-leva; o segundo só descobre na hora do pagamento. É isto que a reserva resolve.
+- [x] Migration 004: `reserved_until` e `reserved_by` em products
+- [x] `POST /api/reservas` — segura por 10 min; renova a cada etapa concluída
+- [x] `POST /api/reservas/liberar` — devolve ao sair (sendBeacon)
+- [x] Reserva vencida vale como livre, sem rotina de limpeza
+- [x] Pedido criado estende a reserva para 30 min (tempo do PIX)
+- [x] Mensagem separa "vendida" de "reservada por outra pessoa"
+- [x] `reservada` exposto em `GET /produtos` e `/produtos/:id`
+- [x] `useReserva` no front, com contador e devolução na saída
+- [ ] Contador visível no checkout — junto com a tarefa 5
 
-- [ ] Migration: `reserved_until` em products
-- [ ] Reservar ao entrar no checkout (15 min)
-- [ ] Liberar reserva expirada
-- [ ] Mensagem clara para quem perdeu a peça
-- [ ] Contador visível no checkout
+**Por que expira em vez de "soltar quando sair":** não dá para saber quando
+alguém saiu. Fechar a aba às vezes avisa (`pagehide` + `sendBeacon`); ficar sem
+sinal, trocar de app no celular ou o navegador matar a aba, nunca. Então o
+prazo é a garantia e o aviso de saída é só um atalho que devolve mais cedo.
+
+**Não existe listener de `visibilitychange`** de propósito: no celular, sair da
+aba é o que todo mundo faz para copiar o CPF ou abrir o app do banco. Soltar a
+peça nisso quebraria justamente quem está comprando.
+
+**10 min no formulário, 30 min depois do pedido criado.** O código PIX do
+Mercado Pago vive ~30 min: se a reserva morresse aos 10, a peça voltaria à
+vitrine e alguém compraria uma peça que o primeiro ainda está pagando.
+
+**Bug de fuso horário encontrado aqui (migration 005).** As colunas eram
+`TIMESTAMP`, que não guarda fuso. O Postgres do Railway roda em UTC e o Node
+no fuso de quem sobe o servidor, então o mesmo instante era lido com 3 horas de
+diferença: `reserved_until > NOW()` dizia que a reserva tinha vencido enquanto
+o JavaScript dizia que ainda valia. Todas as colunas de instante viraram
+`TIMESTAMPTZ`. Isso também corrige a data dos pedidos no painel, que apareceria
+3 horas adiantada. `coupons.valid_until` continua `DATE` de propósito.
 
 ---
 

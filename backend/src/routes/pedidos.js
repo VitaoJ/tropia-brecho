@@ -3,6 +3,10 @@ import { query, transacao } from '../db.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { normalizarCodigo, motivoInvalido } from '../utils/cupom.js'
 import { calcularTotais, arredondar, FORMAS_PAGAMENTO } from '../utils/preco.js'
+import {
+  RESERVA_PAGAMENTO_MINUTOS, reservadaPorOutro, daquiAMinutos,
+} from '../utils/reserva.js'
+import { randomUUID } from 'crypto'
 
 const router = Router()
 
@@ -78,6 +82,9 @@ function validarPedido(corpo = {}) {
       itens,
       cupom: normalizarCodigo(corpo.cupom) || null,
       forma,
+      // Sem sessão (chamada direta na API) o pedido ainda precisa segurar as
+      // peças durante o pagamento, então inventamos uma dona para elas.
+      sessao: UUID.test(texto(corpo.sessao)) ? texto(corpo.sessao) : randomUUID(),
       totalEsperado: corpo.total_esperado == null ? null : Number(corpo.total_esperado),
     },
   }
@@ -97,7 +104,7 @@ router.post('/', async (req, res) => {
       // FOR UPDATE segura as peças até o COMMIT: duas pessoas fechando a
       // mesma peça ao mesmo tempo entram em fila em vez de vender as duas.
       const { rows: pecas } = await cliente.query(
-        `SELECT id, name, price, size, sold
+        `SELECT id, name, price, size, sold, reserved_until, reserved_by
            FROM products
           WHERE id = ANY($1::uuid[])
           FOR UPDATE`,
@@ -108,15 +115,23 @@ router.post('/', async (req, res) => {
         return { status: 404, corpo: { erro: 'Alguma peça do carrinho não existe mais' } }
       }
 
-      const vendidas = pecas.filter(p => p.sold)
-      if (vendidas.length) {
+      // Vendida é definitivo; reservada por outra sessão é só questão de tempo,
+      // então o motivo vai separado para o site poder falar diferente de cada.
+      const indisponiveis = pecas
+        .filter(p => p.sold || reservadaPorOutro(p, dados.sessao))
+        .map(p => ({ id: p.id, nome: p.name, motivo: p.sold ? 'vendida' : 'reservada' }))
+
+      if (indisponiveis.length) {
+        const [primeira] = indisponiveis
         return {
           status: 409,
           corpo: {
-            erro: vendidas.length === 1
-              ? `A peça "${vendidas[0].name}" acabou de ser vendida`
-              : 'Algumas peças acabaram de ser vendidas',
-            indisponiveis: vendidas.map(p => ({ id: p.id, nome: p.name })),
+            erro: indisponiveis.length > 1
+              ? 'Algumas peças não estão mais disponíveis'
+              : primeira.motivo === 'vendida'
+                ? `A peça "${primeira.nome}" acabou de ser vendida`
+                : `A peça "${primeira.nome}" está sendo comprada por outra pessoa neste momento`,
+            indisponiveis,
           },
         }
       }
@@ -180,6 +195,15 @@ router.post('/', async (req, res) => {
         [pedido.id, ...pecas.flatMap(p => [p.id, p.price, p.name, p.size])]
       )
 
+      // O pedido existe: as peças ficam seguradas pelo tempo do pagamento, que
+      // é mais longo que o do formulário. Sem isto, um PIX gerado no minuto 9
+      // perderia a peça no minuto 10, com o cliente ainda pagando.
+      const reservaAte = daquiAMinutos(RESERVA_PAGAMENTO_MINUTOS)
+      await cliente.query(
+        'UPDATE products SET reserved_until = $1, reserved_by = $2 WHERE id = ANY($3::uuid[])',
+        [reservaAte, dados.sessao, pecas.map(p => p.id)]
+      )
+
       return {
         status: 201,
         corpo: {
@@ -189,6 +213,8 @@ router.post('/', async (req, res) => {
             status: pedido.status,
             forma_pagamento: pedido.payment_method,
             cupom: cupom?.code ?? null,
+            sessao: dados.sessao,
+            reserva_ate: reservaAte.toISOString(),
             ...totais,
             itens: pecas.map(p => ({ id: p.id, nome: p.name, tamanho: p.size, preco: Number(p.price) })),
           },
@@ -371,8 +397,9 @@ export async function aplicarStatus(cliente, pedido, novo) {
   const ficaPago = PAGO.includes(novo)
 
   if (!eraPago && ficaPago) {
+    // Vendida não precisa mais de reserva: a baixa já tira da vitrine.
     await cliente.query(
-      `UPDATE products SET sold = TRUE
+      `UPDATE products SET sold = TRUE, reserved_until = NULL, reserved_by = NULL
         WHERE id IN (SELECT product_id FROM order_items
                       WHERE order_id = $1 AND product_id IS NOT NULL)`,
       [pedido.id]
@@ -382,20 +409,25 @@ export async function aplicarStatus(cliente, pedido, novo) {
     }
   }
 
-  if (eraPago && !ficaPago) {
-    // Cancelou: a peça volta para a vitrine e o cupom recupera o uso.
+  // Cancelar solta as peças, tenha o pedido sido pago ou não: um pedido
+  // pendente cancelado precisa devolver a peça na hora, sem esperar os 30 min
+  // da reserva de pagamento vencerem.
+  if (novo === 'cancelled') {
     await cliente.query(
-      `UPDATE products SET sold = FALSE
+      `UPDATE products SET sold = FALSE, reserved_until = NULL, reserved_by = NULL
         WHERE id IN (SELECT product_id FROM order_items
                       WHERE order_id = $1 AND product_id IS NOT NULL)`,
       [pedido.id]
     )
-    if (pedido.coupon_id) {
-      await cliente.query(
-        'UPDATE coupons SET uses = GREATEST(uses - 1, 0) WHERE id = $1',
-        [pedido.coupon_id]
-      )
-    }
+  }
+
+  // O uso do cupom só volta se tinha sido contado, ou seja, se o pedido
+  // chegou a ser pago.
+  if (eraPago && !ficaPago && pedido.coupon_id) {
+    await cliente.query(
+      'UPDATE coupons SET uses = GREATEST(uses - 1, 0) WHERE id = $1',
+      [pedido.coupon_id]
+    )
   }
 }
 
