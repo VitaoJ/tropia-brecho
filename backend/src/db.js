@@ -21,3 +21,23 @@ export const pool = new Pool({
 pool.on('error', (err) => console.error('Erro no pool do Postgres:', err.message))
 
 export const query = (text, params) => pool.query(text, params)
+
+/**
+ * Roda `fn` dentro de uma transação e devolve a conexão ao pool no fim,
+ * dando erro ou não. Sem o `release` no finally, um erro vaza conexão e
+ * depois de algumas o servidor trava esperando uma livre.
+ */
+export async function transacao(fn) {
+  const cliente = await pool.connect()
+  try {
+    await cliente.query('BEGIN')
+    const resultado = await fn(cliente)
+    await cliente.query('COMMIT')
+    return resultado
+  } catch (err) {
+    await cliente.query('ROLLBACK').catch(() => {})
+    throw err
+  } finally {
+    cliente.release()
+  }
+}

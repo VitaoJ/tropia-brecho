@@ -83,16 +83,40 @@ Marcar `[x]` ao concluir.
 
 ---
 
-### 3. Backend de pedidos
-- [ ] `POST /api/pedidos` — cria cliente, endereço, pedido e itens numa transação
-- [ ] Validar que toda peça ainda está disponível antes de criar
-- [ ] Recalcular o total no servidor (nunca confiar no valor que vem do front)
-- [ ] `GET /api/pedidos` e `PUT /api/pedidos/:id/status` (admin)
+### 3. Backend de pedidos ✅
+
+- [x] `POST /api/pedidos` — cria cliente, endereço, pedido e itens numa transação
+- [x] Validar que toda peça ainda está disponível antes de criar
+- [x] Recalcular o total no servidor (nunca confiar no valor que vem do front)
+- [x] `GET /api/pedidos` e `PUT /api/pedidos/:id/status` (admin)
+- [x] `GET /api/pedidos/:id/publico` para a página de sucesso, sem CPF nem endereço
+- [x] Migration 003: subtotal/desconto/frete separados, cupom e snapshot da peça
+- [x] Teste de ponta a ponta: `npm run teste:pedidos` (38 checagens)
+
+**Como o total é fechado:** `backend/src/utils/preco.js`. O navegador pode mandar
+`total_esperado`; se não bater com a conta do servidor, o pedido é recusado com
+409 em vez de cobrar um valor que o cliente não viu.
+
+⚠️ **Risco de divergência:** frete e desconto do PIX existem em dois arquivos,
+`frontend/src/utils/preco.js` e `backend/src/utils/preco.js`. Mudar um sem o
+outro faz o checkout recusar todo pedido com 409. Mexeu em um, mexa no outro.
+
+**Status:** `pending → paid → shipped → delivered`, e `cancelled` a partir de
+qualquer um antes de entregue. Não anda para trás nem pula etapa. Confirmar dá
+baixa na peça e conta o uso do cupom; cancelar desfaz os dois.
+
+⚠️ **Teste roda contra o banco de produção** (é o que está no `.env`). O script
+limpa o que cria, mas se for interrompido no meio deixa pedido de teste no
+painel. Vale criar um banco separado de teste quando sobrar tempo.
 
 ---
 
 ### 4. Reserva de peça
 Duas pessoas podem comprar a mesma peça. Precisa resolver antes de cobrar.
+
+Confirmado na tarefa 3: o `FOR UPDATE` impede vender uma peça **já paga**, mas
+nada impede dois pedidos *pendentes* com a mesma peça. Quem pagar primeiro
+leva; o segundo só descobre na hora do pagamento. É isto que a reserva resolve.
 
 - [ ] Migration: `reserved_until` em products
 - [ ] Reservar ao entrar no checkout (15 min)

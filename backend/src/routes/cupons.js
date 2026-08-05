@@ -1,23 +1,9 @@
 import { Router } from 'express'
 import { query } from '../db.js'
 import { requireAdmin } from '../middlewares/auth.js'
+import { normalizarCodigo as normalizar, motivoInvalido } from '../utils/cupom.js'
 
 const router = Router()
-
-const normalizar = (codigo) => String(codigo ?? '').trim().toUpperCase()
-
-// Motivo pelo qual um cupom não pode ser usado, ou null se estiver válido
-function motivoInvalido(cupom) {
-  if (!cupom) return 'Cupom não encontrado'
-  if (!cupom.active) return 'Cupom desativado'
-  if (cupom.valid_until && new Date(cupom.valid_until) < new Date().setHours(0, 0, 0, 0)) {
-    return 'Cupom expirado'
-  }
-  if (cupom.max_uses != null && cupom.uses >= cupom.max_uses) {
-    return 'Cupom esgotado'
-  }
-  return null
-}
 
 // POST /api/cupons/validar — checagem pública, usada no checkout
 router.post('/validar', async (req, res) => {

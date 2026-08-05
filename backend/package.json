@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "migrate": "node scripts/migrate.js",
     "seed": "node scripts/seed.js",
-    "create-admin": "node scripts/create-admin.js"
+    "create-admin": "node scripts/create-admin.js",
+    "teste:pedidos": "node scripts/teste-pedidos.js"
   },
   "dependencies": {
     "express": "^4.18.3",
