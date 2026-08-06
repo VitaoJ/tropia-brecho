@@ -192,7 +192,8 @@ estiver assim, todo pedido nasce `pending` e as peças ficam seguradas 30 min.
 - [x] Remover foto
 - [x] Compressão antes de subir e webp na entrega
 - [x] Colar URL continua existindo, para as peças antigas
-- [ ] **Vitor: definir as 3 variáveis do Cloudinary** (ver abaixo)
+- [x] Testado de ponta a ponta com as credenciais reais
+- [ ] **Vitor: colar as 3 variáveis no Railway** — já estão no `.env` local
 
 **Upload assinado, não preset público.** O Cloudinary aceita upload direto do
 navegador com "preset não assinado", mais simples — mas o preset ficaria
@@ -227,9 +228,16 @@ O catálogo carrega 12 peças por página. Sem isso seriam ~59 MB por página no
 tamanho de que precisa.
 
 **Antes de subir, a foto é reduzida no navegador** para no máximo 2000px de
-lado. Foto de celular tem 4–8 MB e falha no meio pelo 4G da loja; reduzida vai
-em ~300 KB. O `imageOrientation: 'from-image'` não é enfeite: sem ele, foto
-tirada em pé sobe deitada, porque a rotação vive só no EXIF.
+lado. O `imageOrientation: 'from-image'` não é enfeite: sem ele, foto tirada em
+pé sobe deitada, porque a rotação vive só no EXIF.
+
+Medido subindo uma foto de 3000×2000 pelo painel:
+
+| Etapa | Tamanho |
+|---|---|
+| Arquivo escolhido | 5,0 MB (3000×2000) |
+| Depois do preparo, o que sobe | 39 KB (2000×1333) |
+| O que o card entrega | 4,6 KB, webp |
 
 ⚠️ **Remover uma foto do formulário não apaga do Cloudinary**, só tira a
 referência — quem remove por engano e fecha sem salvar não perde nada. Existe
