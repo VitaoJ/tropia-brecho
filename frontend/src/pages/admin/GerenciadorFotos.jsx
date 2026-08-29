@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { subirFoto, configUpload } from '../../services/api'
-import { prepararFoto, otimizar } from '../../utils/imagem'
+import { subirFoto, configUpload, recortarFundo } from '../../services/api'
+import { prepararFoto, otimizar, publicIdDaUrl } from '../../utils/imagem'
 
 /**
  * Fotos da peça: subir, reordenar e remover.
@@ -18,6 +18,8 @@ export default function GerenciadorFotos({ fotos, aoMudar, token }) {
   const [arrastando, setArrastando] = useState(false)
   const [colando, setColando] = useState(false)
   const [urlColada, setUrlColada] = useState('')
+  const [recortando, setRecortando] = useState(null)   // índice da foto em recorte
+  const [erroRecorte, setErroRecorte] = useState(null)
   const entrada = useRef(null)
 
   useEffect(() => {
@@ -65,6 +67,22 @@ export default function GerenciadorFotos({ fotos, aoMudar, token }) {
   // remove por engano e fecha sem salvar não perde nada.
   const remover = (i) => aoMudar(atual => atual.filter((_, idx) => idx !== i))
 
+  // Troca o fundo pela cor do site. A foto vira outra, então a lista aponta
+  // para a nova — a antiga fica no Cloudinary caso seja preciso voltar.
+  async function recortar(i) {
+    const id = publicIdDaUrl(fotos[i])
+    if (!id) { setErroRecorte('Só dá para recortar fotos enviadas pelo painel'); return }
+    setRecortando(i); setErroRecorte(null)
+    try {
+      const { url } = await recortarFundo(id, token)
+      aoMudar(atual => atual.map((f, idx) => idx === i ? url : f))
+    } catch (e) {
+      setErroRecorte(e.message)
+    } finally {
+      setRecortando(null)
+    }
+  }
+
   const adicionarUrl = () => {
     const url = urlColada.trim()
     if (!url) return
@@ -77,7 +95,7 @@ export default function GerenciadorFotos({ fotos, aoMudar, token }) {
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-xs text-[#654a2b]">
-          Fotos {fotos.length > 0 && <span className="opacity-70">— a primeira é a capa</span>}
+          Fotos {fotos.length > 0 && <span className="opacity-70">— a primeira é a capa · ✂ troca o fundo pela cor do site</span>}
         </span>
         {fotos.length > 0 && (
           <span className="text-[11px] text-[#654a2b] opacity-70">{fotos.length} foto{fotos.length > 1 ? 's' : ''}</span>
@@ -104,6 +122,14 @@ export default function GerenciadorFotos({ fotos, aoMudar, token }) {
                 ×
               </button>
 
+              <button type="button" onClick={() => recortar(i)} disabled={recortando !== null}
+                title="Trocar o fundo pela cor do site"
+                className="absolute top-1 right-8 w-6 h-6 rounded-full bg-[#250000]/75 text-[#eae1d4]
+                  text-[10px] leading-none flex items-center justify-center hover:bg-[#654a2b]
+                  disabled:opacity-40">
+                {recortando === i ? '·' : '✂'}
+              </button>
+
               <div className="absolute bottom-0 inset-x-0 flex">
                 <button type="button" onClick={() => mover(i, i - 1)} disabled={i === 0}
                   aria-label={`Mover foto ${i + 1} para trás`}
@@ -119,6 +145,10 @@ export default function GerenciadorFotos({ fotos, aoMudar, token }) {
             </li>
           ))}
         </ul>
+      )}
+
+      {erroRecorte && (
+        <p className="text-[11px] text-[#c44b00]">{erroRecorte}</p>
       )}
 
       {/* Em andamento */}

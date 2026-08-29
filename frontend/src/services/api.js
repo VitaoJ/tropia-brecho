@@ -128,6 +128,12 @@ export function configUpload(token) {
   return req('/upload/config', { token })
 }
 
+// Troca o fundo da foto pela cor do site. Devolve uma foto NOVA — a original
+// continua no Cloudinary, então dá para desfazer trocando a URL de volta.
+export function recortarFundo(publicId, token) {
+  return req('/upload/recortar', { method: 'POST', body: { public_id: publicId }, token })
+}
+
 export function removerFoto(publicId, token) {
   return req('/upload/remover', { method: 'POST', body: { public_id: publicId }, token })
 }

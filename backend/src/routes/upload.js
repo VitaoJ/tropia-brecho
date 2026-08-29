@@ -102,4 +102,58 @@ router.post('/remover', requireAdmin, async (req, res) => {
   }
 })
 
+// Cor de fundo do site. O recorte troca o fundo por ela, então as fotos
+// deixam de ser retângulos brancos colados sobre o bege.
+const FUNDO_DO_SITE = 'eae1d4'
+
+// POST /api/upload/recortar — tira o fundo da foto e devolve uma foto nova.
+//
+// Roda a IA UMA VEZ e guarda o resultado como um arquivo próprio, em vez de
+// deixar o recorte na URL de entrega: lá, cada largura do srcset dispararia um
+// recorte novo, multiplicando o custo por foto. Aqui é uma vez e pronto.
+//
+// A foto original continua na conta, intacta — dá para voltar atrás.
+router.post('/recortar', requireAdmin, async (req, res) => {
+  const { cloud, chave, segredo } = config()
+  const publicId = String(req.body.public_id ?? '').trim()
+
+  if (!cloud || !chave || !segredo) return res.status(503).json({ erro: 'Upload não configurado' })
+  if (!publicId) return res.status(400).json({ erro: 'Informe o public_id' })
+  if (!publicId.startsWith(`${PASTA}/`)) {
+    return res.status(400).json({ erro: 'Só dá para recortar fotos das peças' })
+  }
+
+  try {
+    // A origem é a própria foto já transformada: o Cloudinary busca essa URL,
+    // aplica o recorte e salva o resultado como um arquivo novo.
+    const origem = `https://res.cloudinary.com/${cloud}/image/upload`
+      + `/e_background_removal,b_rgb:${FUNDO_DO_SITE}/${publicId}`
+
+    const timestamp = Math.floor(Date.now() / 1000)
+    const params = { folder: PASTA, timestamp }
+    const corpo = new URLSearchParams({
+      file: origem,
+      ...params,
+      api_key: chave,
+      signature: assinar(params, segredo),
+    })
+
+    const r = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/image/upload`, {
+      method: 'POST', body: corpo,
+    })
+    const dados = await r.json()
+
+    if (!dados.secure_url) {
+      // Recorte é add-on: quando a cota acaba, o Cloudinary recusa aqui.
+      return res.status(502).json({
+        erro: dados.error?.message ?? 'O Cloudinary não conseguiu recortar esta foto',
+      })
+    }
+    res.json({ url: dados.secure_url, publicId: dados.public_id })
+  } catch (err) {
+    console.error('POST /upload/recortar:', err)
+    res.status(500).json({ erro: 'Erro ao recortar a foto' })
+  }
+})
+
 export default router
