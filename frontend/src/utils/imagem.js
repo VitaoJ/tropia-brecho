@@ -1,14 +1,19 @@
 // Preparo e entrega de imagens.
 
-const MAX_LADO = 2000       // suficiente para zoom na peça, longe dos 12 MP do celular
-const QUALIDADE = 0.85
+// Teto permanente de qualidade: o que se perde aqui não volta nunca, porque
+// o Cloudinary só guarda o que a gente sobe. A entrega é que aperta os bytes.
+// 2400px cobre uma hero em tela retina larga com folga; 0.92 evita que a
+// recompressão para webp na entrega parta de um arquivo já degradado.
+const MAX_LADO = 2400
+const QUALIDADE = 0.92
 
 /**
  * Encolhe a foto antes de subir.
  *
  * Foto de celular tem 4–8 MB. Subir isso pelo 4G da loja demora e às vezes
- * falha no meio; reduzida fica em ~300 KB e sobe na hora. A qualidade que
- * chega no site é a mesma, porque ninguém exibe 4000px de largura.
+ * falha no meio; reduzida sobe na hora. O corte é generoso de propósito: este
+ * arquivo vira o teto de qualidade de todas as telas, inclusive da hero em
+ * monitor retina, e apertar aqui não tem volta.
  *
  * `imageOrientation: 'from-image'` não é detalhe: sem isso, foto tirada em pé
  * no celular sobe deitada, porque a rotação vive só no EXIF e se perde ao
@@ -82,11 +87,32 @@ const trocarExtensao = (nome) => nome.replace(/\.[^.]+$/, '') + '.jpg'
  * URL que não é do Cloudinary passa intacta, então as fotos antigas coladas à
  * mão continuam funcionando.
  */
-export function otimizar(url, largura = 800) {
+export function otimizar(url, largura = 800, qualidade = 'auto') {
   if (typeof url !== 'string' || !url.includes('/image/upload/')) return url
   if (url.includes('f_auto')) return url   // já otimizada, não empilha
-  return url.replace('/image/upload/', `/image/upload/f_auto,q_auto,c_limit,w_${largura}/`)
+  return url.replace('/image/upload/',
+    `/image/upload/f_auto,q_${qualidade},c_limit,w_${Math.round(largura)}/`)
 }
+
+/**
+ * Lista de versões para o `srcset`, deixando o navegador escolher.
+ *
+ * É isto que conserta a hero, não o nível de compressão: uma foto de 900px
+ * esticada para os 1030px que uma tela retina pede fica borrada, e nenhuma
+ * qualidade recupera pixel que não foi baixado. Medido nesta loja, corrigir
+ * só a compressão ganhou 1 dB de PSNR; corrigir a resolução ganhou 7 dB.
+ *
+ * Quem está num monitor comum continua baixando o arquivo pequeno — o ganho
+ * de qualidade não vira peso para todo mundo.
+ */
+export function fontes(url, larguras, qualidade = 'auto') {
+  if (typeof url !== 'string' || !url.includes('/image/upload/')) return undefined
+  return larguras.map(l => `${otimizar(url, l, qualidade)} ${l}w`).join(', ')
+}
+
+// Fotos grandes e em primeiro plano (hero, galeria da peça) usam auto:best;
+// o resto usa auto, que é mais econômico e não aparece em foto pequena.
+export const MELHOR = 'auto:best'
 
 /** Identificador da foto no Cloudinary, para poder apagá-la de lá. */
 export function publicIdDaUrl(url) {

@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext'
 import { buscarProduto } from '../services/api'
 import { formatarPreco, calcularDesconto, precoComPix, normalizarProduto } from '../utils/preco'
 import ProductCard from '../components/ProductCard'
-import { otimizar } from '../utils/imagem'
+import { otimizar, fontes, MELHOR } from '../utils/imagem'
 
 const CONTAINER = 'max-w-6xl mx-auto px-4 md:px-8'
 
@@ -81,7 +81,13 @@ function Galeria({ fotos, nome }) {
           {fotos.map((f, i) => (
             ehCor(f)
               ? <div key={i} className="flex-none w-full h-full" style={{ background: f }} />
-              : <img key={i} src={otimizar(f, 1200)} alt={`${nome} — foto ${i + 1}`}
+              : <img key={i}
+                  src={otimizar(f, 800, MELHOR)}
+                  srcSet={fontes(f, [500, 700, 900, 1200, 1600], MELHOR)}
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  alt={`${nome} — foto ${i + 1}`}
+                  /* Só a foto aberta é urgente; as outras esperam o swipe */
+                  loading={i === 0 ? 'eager' : 'lazy'}
                   className="flex-none w-full h-full object-cover" />
           ))}
         </div>
