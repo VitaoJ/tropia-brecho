@@ -42,9 +42,7 @@ function Cartao({ a }) {
       )}
 
       <figcaption className="flex flex-col gap-3 p-4 flex-1">
-        {/* Sem foto, quem carrega o cartão é a frase: corpo maior para o
-            espaço não parecer sobra. */}
-        <blockquote className={`text-[#250000] flex-1 ${a.foto ? 'text-[15px] leading-relaxed' : 'text-[17px] leading-snug'}`}>
+        <blockquote className="text-[15px] leading-relaxed text-[#250000] flex-1">
           “{a.texto}”
         </blockquote>
 
@@ -189,13 +187,12 @@ export default function Avaliacoes() {
         className="flex items-stretch gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory md:snap-proximity
           -mx-4 px-4 md:-mx-2 md:px-2 pb-2 escondeBarra">
         {avaliacoes.map((a, i) => (
-          // Cartão sem foto ocupa menos: é só texto, e forçá-lo à altura dos
-          // outros deixaria um vazio grande embaixo. Centralizado na faixa,
-          // a diferença de altura lê como ritmo e não como falha.
+          // Mesma largura para todos; o cartão sem foto só é mais baixo,
+          // porque esticá-lo até a altura dos outros deixaria um vazio grande.
+          // self-start mantém todos alinhados pelo topo da faixa.
           <li key={a.id}
-            className={a.foto
-              ? 'w-[78vw] max-w-[300px] md:w-[calc((100%-3rem)/3.25)] md:max-w-none flex-none snap-start'
-              : 'w-[62vw] max-w-[240px] md:w-[calc((100%-3rem)/4.4)] md:max-w-none flex-none snap-start self-center'}>
+            className={`w-[78vw] max-w-[300px] md:w-[calc((100%-3rem)/3.25)] md:max-w-none
+              flex-none snap-start ${a.foto ? '' : 'self-start'}`}>
             <Revelar atraso={i * 60} className={a.foto ? 'h-full' : ''}>
               <Cartao a={a} />
             </Revelar>
