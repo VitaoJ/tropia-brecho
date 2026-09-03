@@ -175,6 +175,32 @@ estiver assim, todo pedido nasce `pending` e as peças ficam seguradas 30 min.
 
 ---
 
+---
+
+### Avaliações na home ✅
+
+- [x] Migration 006: tabela `reviews`
+- [x] API: pública lê só as publicadas; painel vê todas
+- [x] Aba **Avaliações** no painel, com upload de foto (reaproveita o ✂)
+- [x] Seção "Quem já levou" na home, **antes das categorias**
+- [ ] **Vitor: cadastrar avaliações reais** — a seção está vazia
+
+**A seção não aparece enquanto não houver nenhuma publicada.** Seção de
+depoimento vazia, ou com texto de exemplo, é pior que seção nenhuma.
+
+⚠️ **Só use mensagens que clientes de verdade mandaram** — direct, WhatsApp,
+comentário. Depoimento inventado é propaganda enganosa pelo CDC, e num brechó
+pequeno a confiança é o ativo principal. O formulário avisa isso.
+
+**Foto vale mais que estrela.** Num brechó a prova é a pessoa com a peça: mostra
+que a roupa existe, caiu bem e chegou. Por isso a nota entra pequena, em pontos,
+e não como cinco estrelas douradas de marketplace.
+
+"Tirar da home" despublica sem apagar, então dá para rodar avaliações sazonais
+sem perder o histórico.
+
+---
+
 ### 6. Mercado Pago
 - [ ] Access token nas variáveis do Railway (Vitor)
 - [ ] `POST /api/pagamentos/criar` gerando preferência (Checkout Pro)

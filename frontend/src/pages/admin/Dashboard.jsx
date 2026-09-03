@@ -9,6 +9,7 @@ import {
 import { formatarPreco, calcularDesconto } from '../../utils/preco'
 import { otimizar } from '../../utils/imagem'
 import GerenciadorFotos from './GerenciadorFotos'
+import SecaoAvaliacoes from './SecaoAvaliacoes'
 import logoSimbolo from '../../assets/logo-simbolo.svg'
 
 const CONDICOES = [
@@ -470,7 +471,7 @@ export default function Dashboard() {
 
   const disponiveis = pecas.filter(p => !p.sold).length
 
-  const SECOES = [['estoque', 'ESTOQUE'], ['cupons', 'CUPONS']]
+  const SECOES = [['estoque', 'ESTOQUE'], ['cupons', 'CUPONS'], ['avaliacoes', 'AVALIAÇÕES']]
 
   return (
     <div className="min-h-screen bg-[#eae1d4] md:flex">
@@ -509,7 +510,8 @@ export default function Dashboard() {
       <main className="flex-1 min-w-0 p-4 md:p-8">
         {erro && <p className="text-xs text-[#c44b00] bg-[#ffe0cc] px-3 py-2 rounded-sm mb-4">{erro}</p>}
 
-        {secao === 'cupons' ? <SecaoCupons token={token} onErro={setErro} /> : <>
+        {secao === 'avaliacoes' ? <SecaoAvaliacoes token={token} onErro={setErro} />
+         : secao === 'cupons' ? <SecaoCupons token={token} onErro={setErro} /> : <>
         <div className="flex items-center justify-between gap-3 mb-5 md:mb-6">
           <div>
             <h1 className="text-xl md:text-2xl text-[#250000]">Estoque</h1>

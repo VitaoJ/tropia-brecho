@@ -122,6 +122,29 @@ export function buscarPedidoPublico(id) {
   return get(`/pedidos/${id}/publico`)
 }
 
+/* ─── Avaliações ─────────────────────────────────────────────── */
+
+// Só as publicadas — é o que a home mostra.
+export function listarAvaliacoes() {
+  return get('/avaliacoes')
+}
+
+export function listarAvaliacoesAdmin(token) {
+  return req('/avaliacoes/todas', { token })
+}
+
+export function criarAvaliacao(dados, token) {
+  return req('/avaliacoes', { method: 'POST', body: dados, token })
+}
+
+export function atualizarAvaliacao(id, dados, token) {
+  return req(`/avaliacoes/${id}`, { method: 'PUT', body: dados, token })
+}
+
+export function excluirAvaliacao(id, token) {
+  return req(`/avaliacoes/${id}`, { method: 'DELETE', token })
+}
+
 /* ─── Upload de fotos ────────────────────────────────────────── */
 
 export function configUpload(token) {

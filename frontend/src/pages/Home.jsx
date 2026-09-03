@@ -5,6 +5,7 @@ import { normalizarProduto, formatarPreco } from '../utils/preco'
 import ProductCard from '../components/ProductCard'
 import Revelar from '../components/Revelar'
 import { otimizar, fontes, MELHOR } from '../utils/imagem'
+import Avaliacoes from '../components/Avaliacoes'
 
 const CONTAINER = 'max-w-6xl mx-auto px-4 md:px-8'
 
@@ -265,6 +266,7 @@ export default function Home() {
     <>
       <Hero pecas={pecas} total={total} />
       <Ticker dark />
+      <Avaliacoes />
       <Indice />
       <Destaques pecas={pecas} />
       <Manifesto />
