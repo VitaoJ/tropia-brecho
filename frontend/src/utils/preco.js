@@ -34,6 +34,9 @@ export function normalizarProduto(p) {
     preco: Number(p.price),
     tamanho: p.size ?? null,
     imagem: p.images?.[0] ?? null,
+    categoriaSlug: p.categoria_slug ?? null,
+    genero: p.gender ?? null,
+    vendida: Boolean(p.sold),
     desconto: calcularDesconto(p.price, p.original_price),
     novo: p.created_at
       ? Date.now() - new Date(p.created_at).getTime() < DIAS_PARA_DEIXAR_DE_SER_NOVO * 86400000

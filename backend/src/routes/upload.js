@@ -119,9 +119,9 @@ router.post('/recortar', requireAdmin, async (req, res) => {
 
   if (!cloud || !chave || !segredo) return res.status(503).json({ erro: 'Upload não configurado' })
   if (!publicId) return res.status(400).json({ erro: 'Informe o public_id' })
-  if (!publicId.startsWith(`${PASTA}/`)) {
-    return res.status(400).json({ erro: 'Só dá para recortar fotos das peças' })
-  }
+  // Sem trava de pasta aqui, ao contrário do /remover: recortar só LÊ a imagem
+  // e cria uma cópia nova dentro de tropia/pecas, sem destruir nada. Exigir a
+  // pasta bloquearia justamente as fotos antigas, que foram subidas na raiz.
 
   try {
     // A origem é a própria foto já transformada: o Cloudinary busca essa URL,

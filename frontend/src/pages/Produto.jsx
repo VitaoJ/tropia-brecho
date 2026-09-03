@@ -6,6 +6,7 @@ import { buscarProduto } from '../services/api'
 import { formatarPreco, calcularDesconto, precoComPix, normalizarProduto } from '../utils/preco'
 import ProductCard from '../components/ProductCard'
 import { otimizar, fontes, MELHOR } from '../utils/imagem'
+import Lupa from '../components/Lupa'
 
 const CONTAINER = 'max-w-6xl mx-auto px-4 md:px-8'
 
@@ -34,6 +35,7 @@ const CORES_SEM_FOTO = ['#c4ae90', '#a98f6e', '#d6c8b3']
 /* ─── Galeria ────────────────────────────────────────────────── */
 function Galeria({ fotos, nome }) {
   const [idx, setIdx] = useState(0)
+  const [lupa, setLupa] = useState(false)
   const inicioX = useRef(null)
 
   const ir = (i) => setIdx((i + fotos.length) % fotos.length)
@@ -57,6 +59,8 @@ function Galeria({ fotos, nome }) {
   }
 
   const ehCor = (f) => f.startsWith('#')
+  // Peça sem foto cai em cores de preenchimento; a lupa só recebe imagem real.
+  const reais = fotos.filter(f => !ehCor(f))
 
   return (
     <div className="md:flex md:gap-4">
@@ -88,9 +92,16 @@ function Galeria({ fotos, nome }) {
                   alt={`${nome} — foto ${i + 1}`}
                   /* Só a foto aberta é urgente; as outras esperam o swipe */
                   loading={i === 0 ? 'eager' : 'lazy'}
-                  className="flex-none w-full h-full object-cover" />
+                  onClick={() => setLupa(true)}
+                  /* peça sem foto usa cor de preenchimento; ali não há o que ampliar */
+                  className="flex-none w-full h-full object-cover cursor-zoom-in" />
           ))}
         </div>
+
+        {lupa && reais.length > 0 && (
+          <Lupa fotos={reais} indice={Math.max(0, reais.indexOf(fotos[idx]))} nome={nome}
+            aoFechar={() => setLupa(false)} />
+        )}
 
         {fotos.length > 1 && (
           <>
