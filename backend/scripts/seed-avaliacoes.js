@@ -8,8 +8,10 @@
 // por mensagens de clientes de verdade antes de divulgar a loja — depoimento
 // falso é propaganda enganosa pelo CDC.
 //
-// As fotos são das próprias peças, de propósito. Rosto de banco de imagens
-// como se fosse cliente inventaria uma pessoa, o que é bem pior.
+// A imagem é um placeholder que diz "SEM IMAGEM". Não usa rosto de banco de
+// imagens (inventaria uma pessoa) nem repete a foto de uma peça em todos os
+// cartões, o que dá a impressão errada de que quatro clientes compraram a
+// mesma jaqueta.
 import dotenv from 'dotenv'
 import { pool } from '../src/db.js'
 dotenv.config()
@@ -17,6 +19,10 @@ dotenv.config()
 // Marca que identifica o que foi semeado, para a remoção ser exata e nunca
 // encostar numa avaliação real.
 const MARCA = '[exemplo]'
+
+// Placeholder na paleta do site, subido uma vez em tropia/exemplos.
+const SEM_IMAGEM =
+  'https://res.cloudinary.com/mvsuquav/image/upload/v1788406958/tropia/exemplos/sem-imagem.png'
 
 const EXEMPLOS = [
   {
@@ -53,13 +59,8 @@ try {
     const { rowCount } = await pool.query('DELETE FROM reviews WHERE text LIKE $1', [`%${MARCA}`])
     console.log(`${rowCount} avaliação(ões) de exemplo removida(s).`)
   } else {
-    const { rows: fotos } = await pool.query(
-      `SELECT images[1] AS foto FROM products
-        WHERE images IS NOT NULL AND array_length(images,1) > 0`)
     const { rows: pecas } = await pool.query(
       'SELECT id FROM products WHERE sold = FALSE ORDER BY created_at DESC LIMIT 5')
-
-    if (fotos.length === 0) console.warn('Nenhuma peça com foto: os exemplos vão sem imagem.')
 
     let n = 0
     for (const [i, e] of EXEMPLOS.entries()) {
@@ -72,7 +73,7 @@ try {
               VALUES ($1,$2,$3,$4,$5,$6,TRUE,$7)`,
         [
           e.author, e.handle, `${e.text} ${MARCA}`, e.rating,
-          e.comFoto ? (fotos[i % Math.max(fotos.length, 1)]?.foto ?? null) : null,
+          e.comFoto ? SEM_IMAGEM : null,
           pecas[i % Math.max(pecas.length, 1)]?.id ?? null,
           i,
         ]

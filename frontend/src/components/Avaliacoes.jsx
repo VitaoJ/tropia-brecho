@@ -27,7 +27,8 @@ function Nota({ valor }) {
 
 function Cartao({ a }) {
   return (
-    <figure className="flex flex-col bg-[#f2ead9] border border-[#d6c8b3] rounded-sm overflow-hidden h-full">
+    <figure className={`flex flex-col bg-[#f2ead9] border border-[#d6c8b3] rounded-sm overflow-hidden
+      ${a.foto ? 'h-full' : ''}`}>
       {a.foto && (
         <div className="relative bg-[#d6c8b3]" style={{ aspectRatio: '3/4' }}>
           <img
@@ -41,7 +42,9 @@ function Cartao({ a }) {
       )}
 
       <figcaption className="flex flex-col gap-3 p-4 flex-1">
-        <blockquote className="text-[15px] leading-relaxed text-[#250000] flex-1">
+        {/* Sem foto, quem carrega o cartão é a frase: corpo maior para o
+            espaço não parecer sobra. */}
+        <blockquote className={`text-[#250000] flex-1 ${a.foto ? 'text-[15px] leading-relaxed' : 'text-[17px] leading-snug'}`}>
           “{a.texto}”
         </blockquote>
 
@@ -183,12 +186,17 @@ export default function Avaliacoes() {
         /* mandatory no celular deixa o swipe travar certinho em cada cartão;
              no desktop vira proximity porque mandatory puxa de volta o scroll
              das setas e elas param de funcionar. */
-        className="flex gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory md:snap-proximity
+        className="flex items-stretch gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory md:snap-proximity
           -mx-4 px-4 md:-mx-2 md:px-2 pb-2 escondeBarra">
         {avaliacoes.map((a, i) => (
+          // Cartão sem foto ocupa menos: é só texto, e forçá-lo à altura dos
+          // outros deixaria um vazio grande embaixo. Centralizado na faixa,
+          // a diferença de altura lê como ritmo e não como falha.
           <li key={a.id}
-            className="w-[78vw] max-w-[300px] md:w-[calc((100%-3rem)/3.25)] md:max-w-none flex-none snap-start">
-            <Revelar atraso={i * 60} className="h-full">
+            className={a.foto
+              ? 'w-[78vw] max-w-[300px] md:w-[calc((100%-3rem)/3.25)] md:max-w-none flex-none snap-start'
+              : 'w-[62vw] max-w-[240px] md:w-[calc((100%-3rem)/4.4)] md:max-w-none flex-none snap-start self-center'}>
+            <Revelar atraso={i * 60} className={a.foto ? 'h-full' : ''}>
               <Cartao a={a} />
             </Revelar>
           </li>
