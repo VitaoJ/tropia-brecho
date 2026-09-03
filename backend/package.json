@@ -10,7 +10,8 @@
     "seed": "node scripts/seed.js",
     "create-admin": "node scripts/create-admin.js",
     "teste:pedidos": "node scripts/teste-pedidos.js",
-    "teste:reservas": "node scripts/teste-reservas.js"
+    "teste:reservas": "node scripts/teste-reservas.js",
+    "seed:avaliacoes": "node scripts/seed-avaliacoes.js"
   },
   "dependencies": {
     "express": "^4.18.3",

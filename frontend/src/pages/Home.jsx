@@ -84,7 +84,7 @@ function Hero({ pecas, total }) {
                          Sem isto o navegador assume 100vw e baixa grande à toa. */
                       sizes="(min-width: 1024px) 40vw, (min-width: 768px) 45vw, 92vw"
                       alt={destaque.nome}
-                      fetchPriority="high"
+                      fetchpriority="high"
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
                   )}
                 </div>

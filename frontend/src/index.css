@@ -129,3 +129,12 @@ h1, h2, h3 {
     transition: none;
   }
 }
+
+/* Trilho do carrossel: a barra de rolagem some, mas o scroll continua todo
+   nativo — dedo, trackpad, roda e teclado seguem funcionando. */
+.escondeBarra { scrollbar-width: none; -ms-overflow-style: none; }
+.escondeBarra::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .escondeBarra { scroll-behavior: auto; }
+}

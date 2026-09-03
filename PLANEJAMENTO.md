@@ -183,7 +183,13 @@ estiver assim, todo pedido nasce `pending` e as peças ficam seguradas 30 min.
 - [x] API: pública lê só as publicadas; painel vê todas
 - [x] Aba **Avaliações** no painel, com upload de foto (reaproveita o ✂)
 - [x] Seção "Quem já levou" na home, **antes das categorias**
-- [ ] **Vitor: cadastrar avaliações reais** — a seção está vazia
+- [x] Carrossel: arrasta no dedo, setas no desktop, próximo cartão cortado
+- [ ] **Vitor: trocar os 5 exemplos por avaliações reais**
+
+⚠️ **Há 5 avaliações de exemplo NO AR AGORA**, inseridas por
+`npm run seed:avaliacoes`. Cada uma termina com `[exemplo]` visível no site,
+de propósito: enquanto estiverem lá, ninguém confunde com depoimento real.
+Para tirar todas: `npm run seed:avaliacoes -- --remover`.
 
 **A seção não aparece enquanto não houver nenhuma publicada.** Seção de
 depoimento vazia, ou com texto de exemplo, é pior que seção nenhuma.
