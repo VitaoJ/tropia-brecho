@@ -26,6 +26,7 @@ const rotuloCondicao = (valor) =>
 const FORM_VAZIO = {
   name: '', price: '', original_price: '', category_id: '', size: '',
   gender: 'feminino', condition: 'otimo', description: '', fotos: [],
+  weight_kg: '', width_cm: '', height_cm: '', length_cm: '',
 }
 
 const CAMPO = 'h-10 px-3 bg-[#eae1d4] border border-[#d6c8b3] rounded-sm text-sm text-[#250000] outline-none focus:border-[#654a2b] w-full'
@@ -67,6 +68,11 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando, token }) 
       condition: form.condition,
       description: form.description || null,
       images: form.fotos,
+      // Vazio vira nulo: o servidor cai no padrão da categoria e diz que estimou
+      weight_kg: form.weight_kg === '' ? null : Number(form.weight_kg),
+      width_cm:  form.width_cm  === '' ? null : Number(form.width_cm),
+      height_cm: form.height_cm === '' ? null : Number(form.height_cm),
+      length_cm: form.length_cm === '' ? null : Number(form.length_cm),
     })
   }
 
@@ -154,6 +160,26 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando, token }) 
           <span className={rotulo}>Descrição</span>
           <textarea className={`${input} h-24 py-2`} value={form.description} onChange={campo('description')} />
         </label>
+
+        <div className="bg-[#eae1d4] border border-[#d6c8b3] rounded-sm px-3 py-2.5 flex flex-col gap-2">
+          <span className={rotulo}>
+            Peso e medidas da embalagem — para cotar o frete
+          </span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {[['weight_kg', 'Peso (kg)', '0,01'], ['width_cm', 'Largura (cm)', '1'],
+              ['height_cm', 'Altura (cm)', '1'], ['length_cm', 'Compr. (cm)', '1']].map(([k, rot, passo]) => (
+              <label key={k} className="flex flex-col gap-1">
+                <span className="text-[11px] text-[#654a2b]">{rot}</span>
+                <input className={`${input} h-9`} type="number" min="0" step={passo}
+                  value={form[k]} onChange={campo(k)} placeholder="—" />
+              </label>
+            ))}
+          </div>
+          <span className="text-[11px] text-[#654a2b] opacity-80 leading-relaxed">
+            Deixar em branco usa uma estimativa pela categoria. Frete cotado a
+            menos sai do bolso da loja, então vale medir as peças pesadas.
+          </span>
+        </div>
 
         <GerenciadorFotos token={token} fotos={form.fotos}
           aoMudar={(atualizar) => setForm(f => ({ ...f, fotos: atualizar(f.fotos) }))} />
@@ -466,6 +492,8 @@ export default function Dashboard() {
       category_id: p.category_id ?? '', size: p.size ?? '',
       gender: p.gender ?? 'feminino', condition: p.condition ?? 'otimo',
       description: p.description ?? '', fotos: p.images ?? [],
+      weight_kg: p.weight_kg ?? '', width_cm: p.width_cm ?? '',
+      height_cm: p.height_cm ?? '', length_cm: p.length_cm ?? '',
     },
   })
 

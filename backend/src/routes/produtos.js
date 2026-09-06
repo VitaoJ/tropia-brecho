@@ -50,6 +50,7 @@ router.get('/', async (req, res) => {
     const { rows } = await query(
       `SELECT p.id, p.name, p.description, p.price, p.original_price, p.size,
               p.gender, p.condition, p.images, p.sold, p.category_id, p.created_at,
+              p.weight_kg, p.width_cm, p.height_cm, p.length_cm,
               ${RESERVADA} AS reservada,
               c.name AS categoria, c.slug AS categoria_slug
        FROM products p
@@ -119,6 +120,8 @@ router.get('/:id', async (req, res) => {
 const CAMPOS = [
   'name', 'description', 'price', 'original_price',
   'category_id', 'size', 'gender', 'condition', 'images', 'sold',
+  // Usados na cotação de frete; nulos caem no padrão da categoria.
+  'weight_kg', 'width_cm', 'height_cm', 'length_cm',
 ]
 
 // original_price é o preço "de" — só faz sentido acima do preço atual
@@ -133,7 +136,8 @@ function validarDesconto(original_price, price) {
 // POST /api/produtos — criar peça (admin)
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const { name, description, price, original_price, category_id, size, gender, condition, images } = req.body
+    const { name, description, price, original_price, category_id, size, gender,
+            condition, images, weight_kg, width_cm, height_cm, length_cm } = req.body
     if (!name || !price) {
       return res.status(400).json({ erro: 'Nome e preço são obrigatórios' })
     }
@@ -141,11 +145,13 @@ router.post('/', requireAdmin, async (req, res) => {
     if (invalido) return res.status(400).json({ erro: invalido })
 
     const { rows } = await query(
-      `INSERT INTO products (name, description, price, original_price, category_id, size, gender, condition, images)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO products (name, description, price, original_price, category_id, size,
+                             gender, condition, images, weight_kg, width_cm, height_cm, length_cm)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        RETURNING *`,
       [name, description ?? null, price, original_price ?? null, category_id ?? null,
-       size ?? null, gender ?? null, condition ?? null, images ?? []]
+       size ?? null, gender ?? null, condition ?? null, images ?? [],
+       weight_kg || null, width_cm || null, height_cm || null, length_cm || null]
     )
     res.status(201).json({ produto: rows[0] })
   } catch (err) {
