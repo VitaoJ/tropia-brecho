@@ -72,8 +72,13 @@ export default function ProductCard({ produto, aoRemover }) {
     <article className="group relative flex flex-col">
       <Link to={`/produto/${produto.id}`} className="block" onClick={aoClicarNaFoto}>
         <div
-          className="relative rounded-sm mb-2 overflow-hidden bg-[#d6c8b3]"
-          style={{ aspectRatio: '3/4' }}
+          /* Quadrado com a peça inteira dentro, em vez de 3:4 recortando.
+             O acervo tem foto em pé (4:5) e deitada (4:3) misturadas, e
+             qualquer moldura fixa com object-cover corta uma das duas — na
+             deitada sumia quase metade da largura. O fundo é o mesmo bege do
+             site, então a sobra ao redor não vira moldura visível. */
+          className="relative rounded-sm mb-2 overflow-hidden bg-[#eae1d4]"
+          style={{ aspectRatio: '1/1' }}
           {...mouse}
           onTouchStart={aoTocar} onTouchMove={aoMover} onTouchEnd={aoSoltar}
         >
@@ -85,7 +90,7 @@ export default function ProductCard({ produto, aoRemover }) {
               sizes="(min-width: 768px) 24vw, 47vw"
               alt={i === 0 ? produto.nome : `${produto.nome} — detalhe`}
               loading="lazy" draggable="false"
-              className={`absolute inset-0 w-full h-full object-cover
+              className={`absolute inset-0 w-full h-full object-contain
                 transition-opacity duration-500 ease-out
                 ${i === idx ? 'opacity-100' : 'opacity-0'}`} />
           ))}

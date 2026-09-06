@@ -80,7 +80,7 @@ export default function PedidoConfirmado() {
           {pedido.itens.map((item, i) => (
             <li key={i} className="flex gap-2.5 items-center">
               <div className="w-12 h-15 rounded-sm bg-[#d6c8b3] flex-none overflow-hidden" style={{ height: '3.75rem' }}>
-                {item.imagem && <img src={otimizar(item.imagem, 150)} alt="" className="w-full h-full object-cover" />}
+                {item.imagem && <img src={otimizar(item.imagem, 150)} alt="" className="w-full h-full object-contain" />}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[14px] text-[#250000] leading-tight">{item.nome}</p>

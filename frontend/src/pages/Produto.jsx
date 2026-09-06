@@ -70,15 +70,15 @@ function Galeria({ fotos, nome }) {
           {fotos.map((f, i) => (
             <button key={i} onClick={() => setIdx(i)}
               className={`rounded-sm overflow-hidden transition-opacity ${idx === i ? 'ring-2 ring-[#250000]' : 'opacity-60 hover:opacity-100'}`}
-              style={{ aspectRatio: '3/4', background: ehCor(f) ? f : '#d6c8b3' }}>
-              {!ehCor(f) && <img src={otimizar(f, 160)} alt="" className="w-full h-full object-cover" />}
+              style={{ aspectRatio: '1/1', background: ehCor(f) ? f : '#eae1d4' }}>
+              {!ehCor(f) && <img src={otimizar(f, 160)} alt="" className="w-full h-full object-contain" />}
             </button>
           ))}
         </div>
       )}
 
-      <div className="relative overflow-hidden md:rounded-sm flex-1 group"
-        style={{ aspectRatio: '3/4' }}
+      <div className="relative overflow-hidden md:rounded-sm flex-1 group bg-[#eae1d4]"
+        style={{ aspectRatio: '1/1' }}
         onTouchStart={aoTocar} onTouchEnd={aoSoltar}>
         <div className="flex h-full transition-transform duration-400 ease-in-out"
           style={{ transform: `translateX(-${idx * 100}%)` }}>
@@ -94,7 +94,7 @@ function Galeria({ fotos, nome }) {
                   loading={i === 0 ? 'eager' : 'lazy'}
                   onClick={() => setLupa(true)}
                   /* peça sem foto usa cor de preenchimento; ali não há o que ampliar */
-                  className="flex-none w-full h-full object-cover cursor-zoom-in" />
+                  className="flex-none w-full h-full object-contain cursor-zoom-in" />
           ))}
         </div>
 

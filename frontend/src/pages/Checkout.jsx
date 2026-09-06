@@ -72,7 +72,7 @@ function Resumo({ itens, cupom, subtotal, descontoCupom, frete, total, forma, ec
         {itens.map(item => (
           <li key={item.id} className="flex gap-2.5 items-center">
             <div className="w-11 h-14 rounded-sm bg-[#d6c8b3] flex-none overflow-hidden">
-              {item.imagem && <img src={otimizar(item.imagem, 150)} alt="" className="w-full h-full object-cover" />}
+              {item.imagem && <img src={otimizar(item.imagem, 150)} alt="" className="w-full h-full object-contain" />}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[13px] text-[#250000] leading-tight truncate">{item.nome}</p>

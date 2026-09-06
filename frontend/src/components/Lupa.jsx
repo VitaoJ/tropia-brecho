@@ -143,7 +143,7 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
               className={`w-10 rounded-sm overflow-hidden border transition-all duration-200
                 ${n === i ? 'border-[#ffc509]' : 'border-transparent opacity-50 hover:opacity-100'}`}
               style={{ height: '3.25rem' }}>
-              <img src={otimizar(f, 120)} alt="" className="w-full h-full object-cover" />
+              <img src={otimizar(f, 120)} alt="" className="w-full h-full object-contain" />
             </button>
           ))}
         </div>
