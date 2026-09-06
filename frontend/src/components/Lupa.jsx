@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { otimizar, fontes, MELHOR } from '../utils/imagem'
+
+// Quanto dura o cruzamento entre uma foto e a próxima
+const TROCA = 160
 
 /**
  * Foto em tela cheia com zoom.
@@ -7,6 +11,11 @@ import { otimizar, fontes, MELHOR } from '../utils/imagem'
  * Num brechó a foto é a única forma de conferir costura, desgaste e trama —
  * é o que substitui pegar a peça na mão. Por isso o zoom vai à resolução mais
  * alta que existe, e não a uma versão de vitrine ampliada.
+ *
+ * Vai para o body por portal, e não fica onde foi escrita: a galeria mora
+ * dentro de um `position: sticky`, que cria contexto de empilhamento e prende
+ * qualquer `fixed` lá dentro. Sem o portal, as peças similares — que vêm
+ * depois no DOM — pintavam por cima da foto aberta, e z-index nenhum resolve.
  *
  * No celular o zoom fica por conta do próprio navegador (pinça), que é mais
  * fluido que qualquer coisa reimplementada em JavaScript. No desktop, clicar
@@ -16,12 +25,38 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
   const [i, setI] = useState(indice)
   const [ampliado, setAmpliado] = useState(false)
   const [origem, setOrigem] = useState({ x: 50, y: 50 })
+  const [entrou, setEntrou] = useState(false)   // fundo e foto surgem aos poucos
+  const [trocando, setTrocando] = useState(false)
   const inicioX = useRef(null)
+  const relogio = useRef(null)
+
+  // Só depois de montado é que ligamos a opacidade: o navegador precisa
+  // pintar o estado inicial uma vez para ter de onde animar.
+  //
+  // rAF sozinho não serve: ele simplesmente NÃO roda com o documento oculto,
+  // e a lupa abriria invisível. O temporizador roda de qualquer jeito, então
+  // ele é a garantia e o rAF é só o caminho rápido quando a aba está à vista.
+  useEffect(() => {
+    const quadro = requestAnimationFrame(() => setEntrou(true))
+    const rede = setTimeout(() => setEntrou(true), 80)
+    return () => { cancelAnimationFrame(quadro); clearTimeout(rede) }
+  }, [])
 
   const ir = useCallback((n) => {
-    setI((n + fotos.length) % fotos.length)
-    setAmpliado(false)
-  }, [fotos.length])
+    const proximo = (n + fotos.length) % fotos.length
+    if (proximo === i) return
+    // Apaga, troca, acende: o corte seco entre duas fotos de roupa parecia
+    // falha de carregamento.
+    setTrocando(true)
+    clearTimeout(relogio.current)
+    relogio.current = setTimeout(() => {
+      setI(proximo)
+      setAmpliado(false)
+      setTrocando(false)
+    }, TROCA)
+  }, [fotos.length, i])
+
+  useEffect(() => () => clearTimeout(relogio.current), [])
 
   // Teclado: setas navegam, Esc fecha. Sem isto o modal vira uma armadilha
   // para quem não usa mouse.
@@ -59,10 +94,11 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
     })
   }
 
-  return (
+  return createPortal(
     <div role="dialog" aria-modal="true" aria-label={`${nome} — foto ${i + 1} de ${fotos.length}`}
-      className="fixed inset-0 z-[60] bg-[#250000]/95 flex flex-col"
-      onClick={aoFechar}>
+      onClick={aoFechar}
+      className={`fixed inset-0 z-[200] flex flex-col bg-[#250000]/80 backdrop-blur-md
+        transition-opacity duration-300 ease-out ${entrou ? 'opacity-100' : 'opacity-0'}`}>
 
       <div className="flex items-center justify-between px-4 h-14 flex-none text-[#eae1d4]">
         <span className="text-[11px] tracking-[0.2em] tabular-nums opacity-80">
@@ -87,9 +123,16 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
           alt={`${nome} — foto ${i + 1}`}
           onMouseMove={mover}
           onClick={() => setAmpliado(v => !v)}
-          className={`max-w-full max-h-full object-contain select-none transition-transform duration-300
+          className={`max-w-full max-h-full object-contain select-none
+            ${trocando || !entrou ? 'opacity-0' : 'opacity-100'}
             ${ampliado ? 'scale-[2.2] cursor-zoom-out' : 'cursor-zoom-in'}`}
-          style={ampliado ? { transformOrigin: `${origem.x}% ${origem.y}%` } : undefined} />
+          style={{
+            // O apagar cabe dentro de TROCA, senão a foto trocava antes de
+            // sumir e o cruzamento não aparecia. O zoom fica mais lento de
+            // propósito: ampliar é gesto, trocar de foto é passagem.
+            transition: `opacity ${TROCA - 20}ms ease-out, transform 300ms ease-out`,
+            ...(ampliado ? { transformOrigin: `${origem.x}% ${origem.y}%` } : {}),
+          }} />
       </div>
 
       {fotos.length > 1 && (
@@ -97,7 +140,7 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
           onClick={(e) => e.stopPropagation()}>
           {fotos.map((f, n) => (
             <button key={n} onClick={() => ir(n)} aria-label={`Ver foto ${n + 1}`}
-              className={`w-10 h-13 rounded-sm overflow-hidden border transition-opacity
+              className={`w-10 rounded-sm overflow-hidden border transition-all duration-200
                 ${n === i ? 'border-[#ffc509]' : 'border-transparent opacity-50 hover:opacity-100'}`}
               style={{ height: '3.25rem' }}>
               <img src={otimizar(f, 120)} alt="" className="w-full h-full object-cover" />
@@ -110,6 +153,7 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
         <span className="hidden md:inline">CLIQUE NA FOTO PARA AMPLIAR · ESC PARA FECHAR</span>
         <span className="md:hidden">USE DOIS DEDOS PARA AMPLIAR</span>
       </p>
-    </div>
+    </div>,
+    document.body
   )
 }

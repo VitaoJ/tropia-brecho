@@ -138,3 +138,9 @@ h1, h2, h3 {
 @media (prefers-reduced-motion: reduce) {
   .escondeBarra { scroll-behavior: auto; }
 }
+
+/* Quem pede menos movimento não recebe cruzamento de fotos nem surgir de
+   fundo: o conteúdo aparece direto, sem etapa intermediária. */
+@media (prefers-reduced-motion: reduce) {
+  [role="dialog"], [role="dialog"] img { transition: none !important; }
+}
