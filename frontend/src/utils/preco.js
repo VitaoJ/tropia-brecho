@@ -21,8 +21,28 @@ export function calcularDesconto(price, originalPrice) {
 
 export const precoComPix = (valor) => Number(valor) * (1 - DESCONTO_PIX)
 
-export const calcularFrete = (subtotal) =>
-  subtotal >= FRETE_GRATIS_ACIMA_DE ? 0 : FRETE_FIXO
+const arredondar = (v) => Math.round(Number(v) * 100) / 100
+
+/**
+ * Quanto o cliente paga de frete.
+ *
+ * Abaixo do mínimo, paga a opção que escolheu. A partir do mínimo, a loja
+ * cobre o valor da opção MAIS BARATA e o cliente paga só a diferença se
+ * quiser uma mais cara. Sem isso, alguém com R$ 150 no carrinho escolheria
+ * SEDEX e a loja pagaria a diferença.
+ *
+ * `escolhida` e `maisBarata` são os preços vindos da cotação. Enquanto a
+ * cotação não estiver ligada, os dois vêm nulos e vale o frete fixo antigo —
+ * assim o site continua funcionando durante a transição.
+ */
+export function calcularFrete(subtotal, escolhida = null, maisBarata = null) {
+  const temCotacao = escolhida != null && maisBarata != null
+  const cheio = temCotacao ? Number(escolhida) : FRETE_FIXO
+  const base  = temCotacao ? Number(maisBarata) : FRETE_FIXO
+
+  if (subtotal < FRETE_GRATIS_ACIMA_DE) return arredondar(cheio)
+  return arredondar(Math.max(0, cheio - base))
+}
 
 const DIAS_PARA_DEIXAR_DE_SER_NOVO = 14
 

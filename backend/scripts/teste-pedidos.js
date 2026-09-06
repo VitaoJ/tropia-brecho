@@ -172,9 +172,13 @@ try {
                                     WHERE o.status IN ('paid','shipped','delivered')
                                       AND oi.product_id IS NOT NULL)`)
   await c.query('COMMIT')
-  const { rows: [n] } = await c.query(
-    'SELECT (SELECT COUNT(*) FROM orders)::int p, (SELECT COUNT(*) FROM products WHERE sold)::int v')
-  checar('banco volta ao estado anterior', n.p === 0 && n.v === 0, JSON.stringify(n))
+  // Conta só o que ESTE teste criou. Assumir a tabela vazia era errado: o
+  // banco de produção tem pedidos reais, e a limpeza não deve tocá-los.
+  const { rows: [n] } = await c.query(`
+    SELECT (SELECT COUNT(*) FROM orders o JOIN customers c ON c.id = o.customer_id
+             WHERE c.email LIKE 'teste%@tropia.com')::int p,
+           (SELECT COUNT(*) FROM products WHERE sold)::int v`)
+  checar('nao sobrou nada do teste', n.p === 0 && n.v === 0, JSON.stringify(n))
 } catch (e) { await c.query('ROLLBACK'); checar('limpeza', false, e.message) }
 finally { c.release(); await pool.end() }
 
