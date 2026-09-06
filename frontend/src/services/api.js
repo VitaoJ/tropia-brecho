@@ -123,6 +123,14 @@ export function buscarPedidoPublico(id) {
   return get(`/pedidos/${id}/publico`)
 }
 
+/* ─── Frete ──────────────────────────────────────────────────── */
+
+// Preços e prazos reais para o carrinho e o CEP. O servidor usa o preço e as
+// medidas do banco, então nada aqui influencia o valor cotado.
+export function cotarFrete(cep, itens) {
+  return req('/frete/cotar', { method: 'POST', body: { cep, itens } })
+}
+
 /* ─── Avaliações ─────────────────────────────────────────────── */
 
 // Só as publicadas — é o que a home mostra.

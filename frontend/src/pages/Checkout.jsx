@@ -2,14 +2,15 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useReserva } from '../hooks/useReserva'
-import { criarPedido } from '../services/api'
-import { formatarPreco, DESCONTO_PIX } from '../utils/preco'
+import { criarPedido, cotarFrete } from '../services/api'
+import { formatarPreco, DESCONTO_PIX, calcularFrete } from '../utils/preco'
 import {
   mascaraCPF, mascaraTelefone, mascaraCEP, soDigitos,
   validarDados, validarEndereco, buscarCEP,
 } from '../utils/validacao'
 import Campo from '../components/checkout/Campo'
 import ContadorReserva from '../components/checkout/ContadorReserva'
+import OpcoesEntrega from '../components/checkout/OpcoesEntrega'
 import { otimizar } from '../utils/imagem'
 
 const CONTAINER = 'max-w-5xl mx-auto px-4 md:px-8'
@@ -167,6 +168,7 @@ export default function Checkout() {
   const [erroEnvio, setErroEnvio] = useState(null)
   const [caidas, setCaidas] = useState([])
   const [buscandoCep, setBuscandoCep] = useState(false)
+  const [entrega, setEntrega] = useState({ opcoes: [], escolhida: null, carregando: false, erro: null, estimado: false })
 
   // O formulário sobrevive a um F5 sem querer. Também é a base da recuperação
   // de carrinho abandonado: o e-mail é o primeiro campo justamente por isso.
@@ -186,7 +188,14 @@ export default function Checkout() {
     if (quantidade === 0 && !finalizado.current) navigate('/carrinho', { replace: true })
   }, [quantidade, navigate])
 
-  const total = forma === 'pix' ? totalPix : totalCartao
+  // O frete deixa de ser fixo: vem da opção escolhida, já com a regra do
+  // frete grátis. Sem cotação ainda, cai no valor antigo do contexto.
+  const maisBarata = entrega.opcoes[0]?.preco ?? null
+  const freteEscolhido = entrega.escolhida
+    ? calcularFrete(subtotal - descontoCupom, entrega.escolhida.preco, maisBarata)
+    : frete
+  const totalBase = forma === 'pix' ? totalPix - frete : totalCartao - frete
+  const total = totalBase + freteEscolhido
 
   const mudar = (nome, valor) => {
     const formatado =
@@ -199,7 +208,24 @@ export default function Checkout() {
     setCampos(c => ({ ...c, [nome]: formatado }))
     setErros(e => ({ ...e, [nome]: undefined }))
 
-    if (nome === 'cep' && soDigitos(formatado).length === 8) preencherPeloCep(formatado)
+    if (nome === 'cep' && soDigitos(formatado).length === 8) {
+      preencherPeloCep(formatado)
+      cotarEntrega(formatado)
+    }
+  }
+
+  // Cotação do frete para o CEP digitado. Refaz do zero a cada CEP novo, para
+  // não sobrar opção de um endereço que a pessoa já trocou.
+  async function cotarEntrega(cep) {
+    setEntrega({ opcoes: [], escolhida: null, carregando: true, erro: null, estimado: false })
+    try {
+      const { opcoes, estimado } = await cotarFrete(soDigitos(cep), itens.map(i => i.id))
+      // Já deixa a mais barata marcada: é a que a maioria quer, e evita
+      // travar quem não leu a lista.
+      setEntrega({ opcoes, escolhida: opcoes[0] ?? null, carregando: false, erro: null, estimado })
+    } catch (e) {
+      setEntrega({ opcoes: [], escolhida: null, carregando: false, erro: e.message, estimado: false })
+    }
   }
 
   async function preencherPeloCep(cep) {
@@ -232,6 +258,13 @@ export default function Checkout() {
     const achados = etapa === 1 ? validarDados(campos) : validarEndereco(campos)
     setErros(achados)
     if (Object.keys(achados).length > 0) return
+
+    // Sem entrega escolhida o total estaria errado na etapa seguinte
+    if (etapa === 2 && entrega.opcoes.length > 0 && !entrega.escolhida) {
+      setErroEnvio('Escolha uma opção de entrega')
+      return
+    }
+    setErroEnvio(null)
 
     setEtapa(e => e + 1)
     // Avançar é sinal de que a pessoa está mesmo comprando: renova os 10 min.
@@ -268,6 +301,11 @@ export default function Checkout() {
         cupom: cupom?.code ?? null,
         forma_pagamento: forma,
         sessao: reserva.sessao,
+        // O servidor recota e usa o preço dele; isto diz só qual serviço
+        // a pessoa escolheu.
+        entrega: entrega.escolhida
+          ? { id: entrega.escolhida.id, nome: entrega.escolhida.nome, empresa: entrega.escolhida.empresa }
+          : null,
         // O servidor refaz a conta e recusa se não bater — assim ninguém paga
         // um valor diferente do que viu na tela.
         total_esperado: total,
@@ -355,10 +393,17 @@ export default function Checkout() {
                 <Campo rotulo="UF" nome="estado" maxLength={2} placeholder="SP"
                   valor={campos.estado} aoMudar={mudar} erro={erros.estado} />
               </div>
+              <div className="pt-2">
+                <OpcoesEntrega
+                  opcoes={entrega.opcoes} escolhida={entrega.escolhida}
+                  aoEscolher={o => setEntrega(e => ({ ...e, escolhida: o }))}
+                  carregando={entrega.carregando} erro={entrega.erro}
+                  estimado={entrega.estimado}
+                  valorDoPedido={subtotal - descontoCupom} />
+              </div>
+
               <p className="text-[11px] text-[#654a2b] leading-relaxed">
-                Frete fixo de {formatarPreco(14.9)} para todo o Brasil, grátis
-                acima de {formatarPreco(150)}. Enviamos em até 2 dias úteis
-                depois do pagamento confirmado.
+                Enviamos em até 2 dias úteis depois do pagamento confirmado.
               </p>
             </div>
           )}

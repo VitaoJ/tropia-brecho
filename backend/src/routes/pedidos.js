@@ -7,6 +7,7 @@ import {
   RESERVA_PAGAMENTO_MINUTOS, reservadaPorOutro, daquiAMinutos,
 } from '../utils/reserva.js'
 import { randomUUID } from 'crypto'
+import { cotar, freteConfigurado } from '../utils/melhorEnvio.js'
 
 const router = Router()
 
@@ -85,6 +86,8 @@ function validarPedido(corpo = {}) {
       // Sem sessão (chamada direta na API) o pedido ainda precisa segurar as
       // peças durante o pagamento, então inventamos uma dona para elas.
       sessao: UUID.test(texto(corpo.sessao)) ? texto(corpo.sessao) : randomUUID(),
+      // Só o identificador do serviço. O preço é recotado no servidor.
+      entregaId: texto(corpo.entrega?.id) || null,
       totalEsperado: corpo.total_esperado == null ? null : Number(corpo.total_esperado),
     },
   }
@@ -146,10 +149,36 @@ router.post('/', async (req, res) => {
         cupom = rows[0]
       }
 
+      // Recota o frete aqui em vez de aceitar o que veio do navegador: o
+      // preço da entrega é dinheiro, e valor vindo do cliente não vale nada.
+      // Sem cotação configurada, ou com o serviço fora do ar, cai no frete
+      // fixo — melhor cobrar o antigo do que recusar a venda.
+      let escolhido = null, maisBarato = null, servico = null
+      if (dados.entregaId && freteConfigurado()) {
+        try {
+          const comCategoria = await cliente.query(
+            `SELECT p.id, p.price, p.weight_kg, p.width_cm, p.height_cm, p.length_cm,
+                    c.slug AS categoria_slug
+               FROM products p LEFT JOIN categories c ON c.id = p.category_id
+              WHERE p.id = ANY($1::uuid[])`, [dados.itens])
+          const { opcoes } = await cotar(comCategoria.rows, dados.endereco.cep)
+          const achado = opcoes.find(o => o.id === dados.entregaId)
+          if (achado) {
+            escolhido = achado.preco
+            maisBarato = opcoes[0].preco
+            servico = `${achado.nome}${achado.empresa ? ' · ' + achado.empresa : ''}`
+          }
+        } catch (err) {
+          console.error('Cotação no pedido falhou, usando frete fixo:', err.message)
+        }
+      }
+
       const totais = calcularTotais(
         pecas.map(p => p.price),
         cupom?.discount_percent ?? 0,
-        dados.forma
+        dados.forma,
+        escolhido,
+        maisBarato
       )
 
       // O navegador manda quanto *achava* que ia pagar. Se não bater com a
@@ -181,10 +210,10 @@ router.post('/', async (req, res) => {
 
       const { rows: [pedido] } = await cliente.query(
         `INSERT INTO orders (customer_id, address_id, subtotal, discount, shipping, total,
-                             status, payment_method, coupon_id, coupon_code)
-              VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, $8, $9) RETURNING *`,
+                             status, payment_method, coupon_id, coupon_code, shipping_service)
+              VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, $8, $9, $10) RETURNING *`,
         [comprador.id, endereco.id, totais.subtotal, totais.desconto, totais.frete,
-         totais.total, dados.forma, cupom?.id ?? null, cupom?.code ?? null]
+         totais.total, dados.forma, cupom?.id ?? null, cupom?.code ?? null, servico]
       )
 
       const valores = pecas.map((_, i) =>
@@ -213,6 +242,7 @@ router.post('/', async (req, res) => {
             status: pedido.status,
             forma_pagamento: pedido.payment_method,
             cupom: cupom?.code ?? null,
+            entrega: servico,
             sessao: dados.sessao,
             reserva_ate: reservaAte.toISOString(),
             ...totais,
