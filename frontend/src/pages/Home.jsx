@@ -233,12 +233,6 @@ function Destaques({ pecas }) {
           <Revelar key={p.id} atraso={(i % 4) * 70}>
             {/* Alterna a altura no desktop para a grade não ficar plana */}
             <div className={i % 2 === 1 ? 'lg:mt-10' : ''}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] tracking-[0.2em] text-[#654a2b]/70">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span className="h-px flex-1 bg-[#250000]/10" />
-              </div>
               <ProductCard produto={p} />
             </div>
           </Revelar>

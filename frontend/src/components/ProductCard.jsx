@@ -145,13 +145,13 @@ export default function ProductCard({ produto, aoRemover }) {
       {/* Depois de adicionar, o botão vira caminho para o carrinho em vez de
           repetir a ação: a peça é única, clicar de novo não faz nada. */}
       {produto.vendida ? (
-        <span className="mt-4 self-start h-9 px-5 flex items-center border border-[#d6c8b3]
+        <span className="mt-4 self-center h-9 px-5 flex items-center border border-[#d6c8b3]
           text-[10px] tracking-[0.16em] text-[#654a2b] rounded-sm">
           VENDIDA
         </span>
       ) : noCarrinho ? (
         <Link to="/carrinho"
-          className="mt-4 self-start h-9 px-5 flex items-center gap-1.5 bg-[#f2ead9] border border-[#250000]
+          className="mt-4 self-center h-9 px-5 flex items-center gap-1.5 bg-[#f2ead9] border border-[#250000]
             text-[10px] tracking-[0.16em] text-[#250000] rounded-sm hover:bg-[#250000] hover:text-[#eae1d4] transition-colors">
           ✓ NO CARRINHO
         </Link>
@@ -166,7 +166,7 @@ export default function ProductCard({ produto, aoRemover }) {
             categoriaSlug: produto.categoriaSlug ?? null,
             genero: produto.genero ?? null,
           })}
-          className="mt-4 self-start h-9 px-5 bg-[#250000] text-[#eae1d4] text-[10px] tracking-[0.16em]
+          className="mt-4 self-center h-9 px-5 bg-[#250000] text-[#eae1d4] text-[10px] tracking-[0.16em]
             rounded-sm hover:bg-[#432d1c] transition-colors">
           COMPRAR
         </button>
