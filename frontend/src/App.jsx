@@ -5,6 +5,9 @@ import Produto    from './pages/Produto'
 import Carrinho   from './pages/Carrinho'
 import Checkout   from './pages/Checkout'
 import PedidoConfirmado from './pages/PedidoConfirmado'
+import QuemSomos  from './pages/QuemSomos'
+import Upcycling  from './pages/Upcycling'
+import Contato    from './pages/Contato'
 import Favoritos  from './pages/Favoritos'
 import AdminLogin from './pages/admin/Login'
 import Dashboard  from './pages/admin/Dashboard'
@@ -24,6 +27,9 @@ export default function App() {
         <Route path="/checkout"    element={<Layout><Checkout /></Layout>} />
         <Route path="/pedido/:id"  element={<Layout><PedidoConfirmado /></Layout>} />
         <Route path="/favoritos"   element={<Layout><Favoritos /></Layout>} />
+        <Route path="/upcycling"   element={<Layout><Upcycling /></Layout>} />
+        <Route path="/quem-somos"  element={<Layout><QuemSomos /></Layout>} />
+        <Route path="/contato"     element={<Layout><Contato /></Layout>} />
 
         {/* Admin — layout próprio */}
         <Route path="/admin"           element={<AdminLogin />} />

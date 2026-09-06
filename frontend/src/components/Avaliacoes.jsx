@@ -34,22 +34,22 @@ function Cartao({ a }) {
           <img
             src={otimizar(a.foto, 500)}
             srcSet={fontes(a.foto, [300, 400, 500, 650, 800])}
-            sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 78vw"
+            sizes="(min-width: 1024px) 23vw, (min-width: 768px) 33vw, 62vw"
             alt={`Peça que ${a.autor} comprou`}
             loading="lazy"
             className="absolute inset-0 w-full h-full object-cover" />
         </div>
       )}
 
-      <figcaption className="flex flex-col gap-3 p-4 flex-1">
-        <blockquote className="text-[15px] leading-relaxed text-[#250000] flex-1">
+      <figcaption className="flex flex-col gap-2.5 p-3 flex-1">
+        <blockquote className="text-[13px] md:text-[13.5px] leading-relaxed text-[#250000] flex-1">
           “{a.texto}”
         </blockquote>
 
         <div className="flex items-center gap-2 pt-3 border-t border-[#d6c8b3]">
           <div className="min-w-0 flex-1">
-            <p className="text-[13px] text-[#250000] leading-tight truncate">{a.autor}</p>
-            {a.handle && <p className="text-[11px] text-[#654a2b] truncate">@{a.handle}</p>}
+            <p className="text-[12px] text-[#250000] leading-tight truncate">{a.autor}</p>
+            {a.handle && <p className="text-[10px] text-[#654a2b] truncate">@{a.handle}</p>}
           </div>
           <Nota valor={a.nota} />
         </div>
@@ -57,14 +57,14 @@ function Cartao({ a }) {
         {a.peca && (
           <Link to={`/produto/${a.peca.id}`}
             className="flex items-center gap-2 -m-1 p-1 rounded-sm hover:bg-[#eae1d4] transition-colors group">
-            <span className="w-8 h-10 rounded-sm bg-[#d6c8b3] flex-none overflow-hidden">
+            <span className="w-7 h-9 rounded-sm bg-[#d6c8b3] flex-none overflow-hidden">
               {a.peca.imagem && (
                 <img src={otimizar(a.peca.imagem, 100)} alt="" className="w-full h-full object-cover" />
               )}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[9px] tracking-[0.2em] text-[#654a2b] uppercase">Levou</span>
-              <span className="block text-[12px] text-[#250000] truncate group-hover:underline">
+              <span className="block text-[11px] text-[#250000] truncate group-hover:underline">
                 {a.peca.nome}
               </span>
             </span>
@@ -191,7 +191,7 @@ export default function Avaliacoes() {
           // porque esticá-lo até a altura dos outros deixaria um vazio grande.
           // self-start mantém todos alinhados pelo topo da faixa.
           <li key={a.id}
-            className={`w-[78vw] max-w-[300px] md:w-[calc((100%-3rem)/3.25)] md:max-w-none
+            className={`w-[62vw] max-w-[230px] md:w-[calc((100%-3.75rem)/4.25)] md:max-w-none
               flex-none snap-start ${a.foto ? '' : 'self-start'}`}>
             <Revelar atraso={i * 60} className={a.foto ? 'h-full' : ''}>
               <Cartao a={a} />

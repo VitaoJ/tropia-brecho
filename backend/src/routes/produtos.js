@@ -12,7 +12,7 @@ const RESERVADA = '(p.reserved_until IS NOT NULL AND p.reserved_until > NOW())'
 // Filtros via query string: ?categoria=feminino&tamanho=M&genero=feminino&limite=20&pagina=1
 router.get('/', async (req, res) => {
   try {
-    const { categoria, tamanho, genero, condicao } = req.query
+    const { categoria, tamanho, genero, condicao, busca } = req.query
     const limite = Math.min(parseInt(req.query.limite) || 20, 100)
     const pagina = Math.max(parseInt(req.query.pagina) || 1, 1)
 
@@ -35,6 +35,14 @@ router.get('/', async (req, res) => {
     if (condicao) {
       valores.push(condicao)
       filtros.push(`p.condition = $${valores.length}`)
+    }
+    // Busca por texto: nome e descrição, sem diferenciar maiúscula nem
+    // posição. Num acervo pequeno isso basta — quem procura "jaqueta"
+    // não quer motor de busca, quer achar a jaqueta.
+    const termo = String(busca ?? '').trim()
+    if (termo) {
+      valores.push(`%${termo}%`)
+      filtros.push(`(p.name ILIKE $${valores.length} OR p.description ILIKE $${valores.length})`)
     }
 
     valores.push(limite, (pagina - 1) * limite)

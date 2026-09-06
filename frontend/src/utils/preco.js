@@ -4,6 +4,10 @@ export const FRETE_FIXO = 14.90
 export const FRETE_GRATIS_ACIMA_DE = 150.00
 export const DESCONTO_PIX = 0.05
 
+// Valor a partir do qual o pedido leva brinde. A barra do topo usa isto como
+// segunda meta, depois do frete grátis.
+export const BRINDE_ACIMA_DE = 250.00
+
 export const formatarPreco = (valor) =>
   `R$ ${Number(valor).toFixed(2).replace('.', ',')}`
 

@@ -15,7 +15,7 @@ const CONDICOES = [
 
 // Os filtros vivem na URL para que voltar, recarregar e compartilhar
 // mantenham a mesma seleção.
-const CHAVES = ['categoria', 'tamanho', 'genero', 'condicao']
+const CHAVES = ['categoria', 'tamanho', 'genero', 'condicao', 'busca']
 
 function Chip({ ativo, children, ...props }) {
   return (

@@ -28,12 +28,13 @@ async function req(path, { method = 'GET', body, token } = {}) {
 
 const get = (path) => req(path)
 
-export function listarProdutos({ categoria, tamanho, genero, condicao, limite, pagina } = {}) {
+export function listarProdutos({ categoria, tamanho, genero, condicao, busca, limite, pagina } = {}) {
   const params = new URLSearchParams()
   if (categoria) params.set('categoria', categoria)
   if (tamanho) params.set('tamanho', tamanho)
   if (genero) params.set('genero', genero)
   if (condicao) params.set('condicao', condicao)
+  if (busca) params.set('busca', busca)
   if (limite) params.set('limite', limite)
   if (pagina) params.set('pagina', pagina)
   const qs = params.toString()
