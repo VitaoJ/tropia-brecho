@@ -6,6 +6,7 @@ import pedidosRouter    from './routes/pedidos.js'
 import reservasRouter   from './routes/reservas.js'
 import uploadRouter     from './routes/upload.js'
 import avaliacoesRouter from './routes/avaliacoes.js'
+import freteRouter      from './routes/frete.js'
 import pagamentosRouter from './routes/pagamentos.js'
 import authRouter       from './routes/auth.js'
 import categoriasRouter from './routes/categorias.js'
@@ -41,6 +42,7 @@ app.use('/api/pedidos',     pedidosRouter)
 app.use('/api/reservas',    reservasRouter)
 app.use('/api/upload',      uploadRouter)
 app.use('/api/avaliacoes',  avaliacoesRouter)
+app.use('/api/frete',       freteRouter)
 app.use('/api/pagamentos',  pagamentosRouter)
 app.use('/api/auth',        authRouter)
 app.use('/api/categorias',  categoriasRouter)
