@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
-import { formatarPreco, FRETE_GRATIS_ACIMA_DE, BRINDE_ACIMA_DE } from '../utils/preco'
+import { formatarPreco, FRETE_GRATIS_ACIMA_DE } from '../utils/preco'
 
 /**
  * Barra fina no topo, em todas as páginas.
  *
- * Mostra quanto falta para o próximo benefício, um de cada vez: primeiro o
- * frete grátis, depois o brinde. Dizer as duas metas juntas dilui as duas —
- * quem está a R$ 20 do frete não decide por causa de um brinde a R$ 100.
+ * Mostra quanto falta para o frete grátis. Não há brinde: quando existir,
+ * entra aqui como segunda meta, mostrada só depois do frete — duas metas ao
+ * mesmo tempo diluem as duas.
  *
  * Sem nada no carrinho ela anuncia o benefício em vez de cobrar progresso:
  * barra em zero não convence ninguém.
@@ -16,13 +16,8 @@ export default function BarraFreteGratis() {
   const { subtotal, descontoCupom, quantidade } = useCart()
   const valor = subtotal - descontoCupom   // mesma base que decide o frete
 
-  const meta = valor < FRETE_GRATIS_ACIMA_DE
-    ? { alvo: FRETE_GRATIS_ACIMA_DE, premio: 'frete grátis' }
-    : valor < BRINDE_ACIMA_DE
-      ? { alvo: BRINDE_ACIMA_DE, premio: 'brinde' }
-      : null
-
-  const progresso = meta ? Math.min((valor / meta.alvo) * 100, 100) : 100
+  const falta = FRETE_GRATIS_ACIMA_DE - valor
+  const progresso = Math.min((valor / FRETE_GRATIS_ACIMA_DE) * 100, 100)
 
   return (
     <div className="bg-[#250000] text-[#eae1d4]">
@@ -30,13 +25,11 @@ export default function BarraFreteGratis() {
         <Link to={quantidade > 0 ? '/carrinho' : '/catalogo'} className="block group">
           <p className="text-[10px] md:text-[11px] leading-snug text-center tracking-[0.04em]">
             {quantidade === 0 ? (
-              <>Frete grátis acima de <strong className="font-medium">{formatarPreco(FRETE_GRATIS_ACIMA_DE)}</strong>
-                {' '}· brinde acima de <strong className="font-medium">{formatarPreco(BRINDE_ACIMA_DE)}</strong></>
-            ) : meta ? (
-              <>Faltam <strong className="font-medium text-[#ffc509]">{formatarPreco(meta.alvo - valor)}</strong>
-                {' '}para {meta.premio}</>
+              <>Frete grátis em pedidos acima de <strong className="font-medium">{formatarPreco(FRETE_GRATIS_ACIMA_DE)}</strong></>
+            ) : falta > 0 ? (
+              <>Faltam <strong className="font-medium text-[#ffc509]">{formatarPreco(falta)}</strong> para frete grátis</>
             ) : (
-              <>Você tem <strong className="font-medium text-[#ffc509]">frete grátis e brinde</strong> neste pedido</>
+              <>Você tem <strong className="font-medium text-[#ffc509]">frete grátis</strong> neste pedido</>
             )}
           </p>
 
