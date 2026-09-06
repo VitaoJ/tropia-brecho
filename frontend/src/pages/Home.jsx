@@ -26,91 +26,99 @@ function Ticker({ reverse = false, dark = false }) {
     </div>
   )
 }
-
 /* ─── Hero ───────────────────────────────────────────────────────
-   Não é carrossel: é a capa do acervo. A peça em destaque quebra a
-   grade e invade a tipografia, como colagem de fanzine.            */
+   Não é carrossel: é a capa do acervo. A foto ocupa a faixa inteira e
+   a tipografia se apoia nela, como capa de revista.                */
+
+// Foto de capa. Fica fora do banco de propósito: é peça de direção de arte,
+// não item de estoque, e trocá-la é decisão de campanha e não de catálogo.
+const CAPA = 'https://res.cloudinary.com/mvsuquav/image/upload/v1788724160/tropia/site/hero-vintage.jpg'
+
+// A seção em destaque na capa. Trocar aqui muda a chamada da home inteira.
+const DESTAQUE = { nome: 'Masculino', genero: 'masculino', chamada: 'Alfaiataria, malha e jeans garimpados' }
+
 function Hero({ pecas, total }) {
-  const destaque = pecas.find(p => p.imagem) ?? pecas[0]
+  // Quantas peças a seção em destaque tem, e uma foto dela para o cartão.
+  // Sem foto o cartão se vira sozinho — a maioria das peças ainda não tem.
+  const daSecao = pecas.filter(p => p.genero === DESTAQUE.genero)
+  const fotoDaSecao = daSecao.find(p => p.imagem)?.imagem ?? null
 
   return (
-    <section className="relative overflow-hidden bg-[#250000] text-[#eae1d4] grao">
-      <div className={`${CONTAINER} relative pt-9 pb-14 md:pt-14 md:pb-20`}>
-        <div className="md:grid md:grid-cols-12 md:gap-8 md:items-center">
+    <section className="relative overflow-hidden bg-[#250000] text-[#eae1d4]">
+      {/* Foto de fundo cobrindo a faixa toda */}
+      <div className="absolute inset-0">
+        <img
+          src={otimizar(CAPA, 1400, MELHOR)}
+          srcSet={fontes(CAPA, [700, 1000, 1400, 1800, 2400], MELHOR)}
+          sizes="100vw"
+          alt="Peça do acervo Tropia vestida na rua"
+          fetchpriority="high"
+          /* O recorte favorece o tronco: é onde a peça aparece, e é o que
+             muda quando a foto de capa for trocada por outra. */
+          className="w-full h-full object-cover object-[50%_38%]" />
+
+        {/* Escurece só onde o texto pousa, para a foto não perder o resto */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#250000]/85 via-[#250000]/25 to-[#250000]/10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#250000]/60 to-transparent md:to-40%" />
+      </div>
+
+      <div className={`${CONTAINER} relative min-h-[70vh] md:min-h-[72vh] flex flex-col justify-end
+        pt-24 pb-10 md:pt-32 md:pb-14`}>
+        <div className="md:grid md:grid-cols-12 md:gap-8 md:items-end">
 
           {/* Coluna tipográfica */}
           <div className="md:col-span-7 relative z-10">
-            <div className="surgir flex items-center gap-3 mb-6 md:mb-10" style={{ animationDelay: '80ms' }}>
-              <span className="text-[10px] tracking-[0.32em] opacity-60">ACERVO</span>
-              <span className="h-px w-10 bg-[#eae1d4]/30 esticar" style={{ animationDelay: '300ms' }} />
-              <span className="text-[10px] tracking-[0.32em] text-[#ffc509]">
+            <div className="surgir flex items-center gap-3 mb-4 md:mb-5" style={{ animationDelay: '80ms' }}>
+              <span className="text-[10px] md:text-[11px] tracking-[0.32em] italic opacity-80">ACERVO</span>
+              <span className="h-px w-10 bg-[#eae1d4]/40 esticar" style={{ animationDelay: '300ms' }} />
+              <span className="text-[10px] md:text-[11px] tracking-[0.32em] italic">
                 {total > 0 ? `${String(total).padStart(2, '0')} PEÇAS` : 'EM CURADORIA'}
               </span>
             </div>
 
-            <h1 className="surgir font-black italic tracking-[-0.05em] leading-[0.86] mb-5 md:mb-7"
-              style={{ fontSize: 'clamp(2.75rem, 7.5vw, 5.5rem)', animationDelay: '160ms' }}>
-              UMA PEÇA.<br />
-              <span className="text-[#ffc509]">UMA CHANCE.</span>
+            <h1 className="surgir font-black italic tracking-[-0.055em] leading-[0.82] mb-5"
+              style={{ fontSize: 'clamp(3.5rem, 13vw, 9rem)', animationDelay: '160ms' }}>
+              vintage
             </h1>
 
-            <p className="surgir text-sm md:text-base max-w-sm opacity-70 leading-relaxed mb-7 md:mb-8"
-              style={{ animationDelay: '280ms' }}>
-              Brechó de peças únicas, garimpadas uma a uma.
-              Cada item existe em uma só unidade — o que sai, não volta.
-            </p>
-
-            <div className="surgir flex items-center gap-4" style={{ animationDelay: '380ms' }}>
-              <Link to="/catalogo"
-                className="group inline-flex items-center gap-3 bg-[#eae1d4] text-[#250000] px-6 md:px-8 py-3 md:py-4
-                  text-xs tracking-[0.18em] font-medium hover:bg-[#ffc509] transition-colors duration-300">
-                VER O ACERVO
-                <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-              </Link>
-            </div>
+            {/* O cartão leva para uma seção só; o acervo inteiro precisa de
+                porta própria, senão a home tem uma saída só. */}
+            <Link to="/catalogo"
+              className="surgir inline-flex items-center gap-2 text-[11px] tracking-[0.18em]
+                border-b border-[#eae1d4]/40 pb-1 hover:border-[#ffc509] hover:text-[#ffc509] transition-colors"
+              style={{ animationDelay: '380ms' }}>
+              VER O ACERVO
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
 
-          {/* Peça em destaque — invade a coluna do texto no desktop */}
-          {destaque && (
-            <div className="md:col-span-5 relative mt-10 md:mt-0 md:-ml-12 lg:-ml-20">
-              <Link to={`/produto/${destaque.id}`}
-                className="surgir block relative group" style={{ animationDelay: '460ms' }}>
-                <div className="relative overflow-hidden bg-[#432d1c]" style={{ aspectRatio: '3/4' }}>
-                  {destaque.imagem && (
-                    <img
-                      src={otimizar(destaque.imagem, 700, MELHOR)}
-                      srcSet={fontes(destaque.imagem, [500, 700, 900, 1100, 1400, 1800], MELHOR)}
-                      /* Ocupa ~40% da largura no desktop e a tela toda no celular.
-                         Sem isto o navegador assume 100vw e baixa grande à toa. */
-                      sizes="(min-width: 1024px) 40vw, (min-width: 768px) 45vw, 92vw"
-                      alt={destaque.nome}
-                      fetchpriority="high"
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
-                  )}
+          {/* Seção em destaque */}
+          <div className="md:col-span-5 mt-8 md:mt-0 relative z-10 flex md:justify-end">
+            <Link to={`/catalogo?genero=${DESTAQUE.genero}`}
+              className="surgir group block w-full max-w-[300px]" style={{ animationDelay: '460ms' }}>
+              {fotoDaSecao && (
+                <div className="bg-[#eae1d4] overflow-hidden" style={{ aspectRatio: '1/1' }}>
+                  <img src={otimizar(fotoDaSecao, 500)}
+                    srcSet={fontes(fotoDaSecao, [300, 400, 500, 650])}
+                    sizes="(min-width: 768px) 25vw, 80vw"
+                    alt="" loading="lazy"
+                    className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-[1.03]" />
                 </div>
+              )}
+              <div className="bg-[#eae1d4] text-[#250000] px-4 py-3">
+                <p className="text-[9px] tracking-[0.28em] text-[#654a2b] mb-1">EM DESTAQUE</p>
+                <p className="text-lg leading-tight font-medium">{DESTAQUE.nome}</p>
+                <p className="text-[11px] text-[#654a2b] mt-0.5 leading-snug">{DESTAQUE.chamada}</p>
+                <p className="text-[11px] text-[#250000] mt-2 inline-flex items-center gap-1.5">
+                  {daSecao.length > 0
+                    ? `${daSecao.length} ${daSecao.length === 1 ? 'peça' : 'peças'}`
+                    : 'ver seção'}
+                  <span className="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">→</span>
+                </p>
+              </div>
+            </Link>
+          </div>
 
-                {/* Etiqueta de arquivo, deslocada para fora da foto */}
-                <div className="absolute -bottom-4 -left-3 md:-left-6 bg-[#eae1d4] text-[#250000] px-4 py-2.5 max-w-[75%]">
-                  <p className="text-[9px] tracking-[0.28em] text-[#654a2b] mb-0.5">EM DESTAQUE</p>
-                  <p className="text-sm leading-tight truncate">{destaque.nome}</p>
-                  <p className="text-sm font-medium mt-0.5">
-                    {destaque.desconto && (
-                      <span className="line-through text-[#654a2b] text-xs mr-1.5">
-                        {formatarPreco(destaque.desconto.precoAntes)}
-                      </span>
-                    )}
-                    {formatarPreco(destaque.preco)}
-                  </p>
-                </div>
-
-                {destaque.desconto && (
-                  <span className="absolute top-3 right-3 bg-[#ffc509] text-[#250000] text-[10px] tracking-[0.15em] font-medium px-2.5 py-1">
-                    −{destaque.desconto.percentual}%
-                  </span>
-                )}
-              </Link>
-            </div>
-          )}
         </div>
       </div>
     </section>
