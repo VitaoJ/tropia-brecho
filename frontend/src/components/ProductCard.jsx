@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useFavoritos } from '../context/FavoritosContext'
 import { useCart } from '../context/CartContext'
@@ -8,6 +9,11 @@ import { otimizar, fontes } from '../utils/imagem'
 const exibirPreco = (valor) =>
   typeof valor === 'number' ? formatarPreco(valor) : valor
 
+// Só liga o hover em quem tem ponteiro de verdade. No celular o toque também
+// dispara mouseenter, e aí a foto trocaria sozinha brigando com o arrasto.
+const temPonteiro = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(hover: hover)').matches
+
 export default function ProductCard({ produto, aoRemover }) {
   const { toggle, isFavorito } = useFavoritos()
   const { adicionar, temNoCarrinho } = useCart()
@@ -15,22 +21,74 @@ export default function ProductCard({ produto, aoRemover }) {
   const favorito = isFavorito(produto.id)
   const noCarrinho = temNoCarrinho(produto.id)
 
-  // O card fica dentro de <article> e não de <a>: botão dentro de link é HTML
-  // inválido e quebra a navegação por teclado. O link cobre a foto e o texto;
-  // favoritar e comprar ficam por fora.
+  // Fotos que o card pode mostrar. Cai para a capa quando a peça só tem uma.
+  const fotos = (produto.imagens?.length ? produto.imagens : [produto.imagem]).filter(Boolean)
+  const varias = fotos.length > 1
+
+  const [idx, setIdx] = useState(0)
+  // As fotos extras só entram no DOM depois do primeiro contato. Sem isso,
+  // um catálogo de 12 peças baixaria 12 imagens que talvez ninguém veja.
+  const [ativou, setAtivou] = useState(false)
+  const toqueX = useRef(null)
+  const toqueY = useRef(null)
+  const arrastou = useRef(false)
+
+  const acordar = () => { if (varias && !ativou) setAtivou(true) }
+
+  const aoTocar = (e) => {
+    acordar()
+    toqueX.current = e.touches[0].clientX
+    toqueY.current = e.touches[0].clientY
+    arrastou.current = false
+  }
+
+  // Só assume o gesto quando ele é claramente horizontal — senão o card
+  // roubaria a rolagem vertical da página, que é o movimento principal.
+  const aoMover = (e) => {
+    if (toqueX.current === null) return
+    const dx = e.touches[0].clientX - toqueX.current
+    const dy = e.touches[0].clientY - toqueY.current
+    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.4) arrastou.current = true
+  }
+
+  const aoSoltar = (e) => {
+    if (toqueX.current === null) return
+    const dx = e.changedTouches[0].clientX - toqueX.current
+    if (arrastou.current && Math.abs(dx) > 35 && varias) {
+      setIdx(i => (i + (dx < 0 ? 1 : -1) + fotos.length) % fotos.length)
+    }
+    toqueX.current = null
+  }
+
+  // Depois de arrastar, o dedo não deve abrir a peça: o gesto era ver a foto.
+  const aoClicarNaFoto = (e) => { if (arrastou.current) { e.preventDefault(); arrastou.current = false } }
+
+  const mouse = temPonteiro() ? {
+    onMouseEnter: () => { acordar(); if (varias) setIdx(1) },
+    onMouseLeave: () => setIdx(0),
+  } : {}
+
   return (
     <article className="group relative flex flex-col">
-      <Link to={`/produto/${produto.id}`} className="block">
-        <div className="relative rounded-sm mb-2 overflow-hidden bg-[#d6c8b3]" style={{ aspectRatio: '3/4' }}>
-          {produto.imagem && (
-            <img
-              src={otimizar(produto.imagem, 400)}
-              srcSet={fontes(produto.imagem, [300, 400, 500, 650, 800])}
+      <Link to={`/produto/${produto.id}`} className="block" onClick={aoClicarNaFoto}>
+        <div
+          className="relative rounded-sm mb-2 overflow-hidden bg-[#d6c8b3]"
+          style={{ aspectRatio: '3/4' }}
+          {...mouse}
+          onTouchStart={aoTocar} onTouchMove={aoMover} onTouchEnd={aoSoltar}
+        >
+          {(ativou ? fotos : fotos.slice(0, 1)).map((f, i) => (
+            <img key={f}
+              src={otimizar(f, 400)}
+              srcSet={fontes(f, [300, 400, 500, 650, 800])}
               /* 4 colunas no desktop, 2 no celular */
               sizes="(min-width: 768px) 24vw, 47vw"
-              alt={produto.nome} loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-          )}
+              alt={i === 0 ? produto.nome : `${produto.nome} — detalhe`}
+              loading="lazy" draggable="false"
+              className={`absolute inset-0 w-full h-full object-cover
+                transition-opacity duration-500 ease-out
+                ${i === idx ? 'opacity-100' : 'opacity-0'}`} />
+          ))}
 
           {produto.desconto ? (
             <span className="absolute top-2 left-2 text-[9px] md:text-[10px] tracking-[0.15em] bg-[#ffc509] text-[#250000] px-2 py-0.5 font-medium">
@@ -39,6 +97,18 @@ export default function ProductCard({ produto, aoRemover }) {
           ) : produto.novo && (
             <span className="absolute top-2 left-2 text-[9px] md:text-[10px] tracking-[0.15em] bg-[#250000] text-[#eae1d4] px-2 py-0.5">
               NOVO
+            </span>
+          )}
+
+          {/* Marcas de quantas fotos existem. É a única pista de que dá para
+              arrastar — no celular não há hover para insinuar isso. */}
+          {varias && (
+            <span className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              {fotos.map((_, i) => (
+                <span key={i}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors duration-300
+                    ${i === idx ? 'bg-[#eae1d4]' : 'bg-[#eae1d4]/40'}`} />
+              ))}
             </span>
           )}
         </div>
@@ -75,13 +145,13 @@ export default function ProductCard({ produto, aoRemover }) {
       {/* Depois de adicionar, o botão vira caminho para o carrinho em vez de
           repetir a ação: a peça é única, clicar de novo não faz nada. */}
       {produto.vendida ? (
-        <span className="mt-2 h-9 flex items-center justify-center border border-[#d6c8b3]
+        <span className="mt-4 self-start h-9 px-5 flex items-center border border-[#d6c8b3]
           text-[10px] tracking-[0.16em] text-[#654a2b] rounded-sm">
           VENDIDA
         </span>
       ) : noCarrinho ? (
         <Link to="/carrinho"
-          className="mt-2 h-9 flex items-center justify-center gap-1.5 bg-[#f2ead9] border border-[#250000]
+          className="mt-4 self-start h-9 px-5 flex items-center gap-1.5 bg-[#f2ead9] border border-[#250000]
             text-[10px] tracking-[0.16em] text-[#250000] rounded-sm hover:bg-[#250000] hover:text-[#eae1d4] transition-colors">
           ✓ NO CARRINHO
         </Link>
@@ -96,7 +166,7 @@ export default function ProductCard({ produto, aoRemover }) {
             categoriaSlug: produto.categoriaSlug ?? null,
             genero: produto.genero ?? null,
           })}
-          className="mt-2 h-9 bg-[#250000] text-[#eae1d4] text-[10px] tracking-[0.16em]
+          className="mt-4 self-start h-9 px-5 bg-[#250000] text-[#eae1d4] text-[10px] tracking-[0.16em]
             rounded-sm hover:bg-[#432d1c] transition-colors">
           COMPRAR
         </button>

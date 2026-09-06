@@ -34,6 +34,8 @@ export function normalizarProduto(p) {
     preco: Number(p.price),
     tamanho: p.size ?? null,
     imagem: p.images?.[0] ?? null,
+    // A lista inteira: o card mostra a segunda foto no hover e no arrasto.
+    imagens: Array.isArray(p.images) ? p.images : [],
     categoriaSlug: p.categoria_slug ?? null,
     genero: p.gender ?? null,
     vendida: Boolean(p.sold),
