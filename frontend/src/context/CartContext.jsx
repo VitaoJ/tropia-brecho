@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useMemo } from 'react'
 import { calcularFrete, precoComPix } from '../utils/preco'
+import { buscarProduto } from '../services/api'
 
 const CartContext = createContext()
 const CHAVE = 'tropia_carrinho'
@@ -14,6 +15,42 @@ export function CartProvider({ children }) {
   })
 
   useEffect(() => { localStorage.setItem(CHAVE, JSON.stringify(itens)) }, [itens])
+
+  /**
+   * Re-sincroniza o preço das peças do carrinho ao abrir o site.
+   *
+   * O carrinho vive no localStorage e sobrevive a dias. Sem isto, o preço
+   * gravado quando a peça entrou fica congelado: se ele mudar no painel, o
+   * cliente monta o pedido com o valor antigo, o servidor recusa com "o valor
+   * do pedido mudou" — e tentar de novo NUNCA resolve, porque o resumo
+   * continua mostrando o preço velho. Era um beco sem saída no checkout.
+   *
+   * Roda uma vez, na montagem. Peça adicionada depois já entra com o preço
+   * do momento. Falha em silêncio: sem rede, o carrinho continua com o que
+   * tinha, e a trava do servidor segue de pé como última defesa.
+   */
+  useEffect(() => {
+    const guardados = (() => {
+      try { return JSON.parse(localStorage.getItem(CHAVE)) ?? [] } catch { return [] }
+    })()
+    if (guardados.length === 0) return
+
+    let vivo = true
+    Promise.all(guardados.map(i =>
+      buscarProduto(i.id).then(r => r.produto).catch(() => null)
+    )).then(atuais => {
+      if (!vivo) return
+      setItens(prev => prev.map(item => {
+        const atual = atuais.find(p => p && p.id === item.id)
+        if (!atual) return item                      // sumiu: o checkout avisa
+        const preco = Number(atual.price)
+        return Number.isFinite(preco) && preco !== Number(item.preco)
+          ? { ...item, preco }
+          : item
+      }))
+    })
+    return () => { vivo = false }
+  }, [])
   useEffect(() => {
     if (cupom) localStorage.setItem(CHAVE_CUPOM, JSON.stringify(cupom))
     else localStorage.removeItem(CHAVE_CUPOM)
