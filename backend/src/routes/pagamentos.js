@@ -187,9 +187,15 @@ router.post('/processar', async (req, res) => {
       description: `Tropia Brechó · pedido ${String(pedido.id).slice(0, 8).toUpperCase()}`,
       external_reference: pedido.id,
       payment_method_id: metodo,
+      // O pagador é o do PEDIDO, não o que o navegador mandou. O Brick pede
+      // e-mail e CPF de novo na tela de pagamento, e o que a pessoa digita ali
+      // pode ser qualquer coisa: um e-mail em @testuser.com, por exemplo, faz
+      // o Mercado Pago recusar a cobrança inteira com "excludes_by_rule" —
+      // sem dizer que o problema era o e-mail. Estes dois já foram coletados e
+      // validados no checkout, e são para onde a confirmação vai.
       payer: {
-        email: dados.payer?.email || pedido.email,
-        identification: dados.payer?.identification ?? { type: 'CPF', number: pedido.cpf },
+        email: pedido.email,
+        identification: { type: 'CPF', number: pedido.cpf },
       },
     }
 
