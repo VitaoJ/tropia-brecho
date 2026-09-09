@@ -153,9 +153,14 @@ export default function Pagamento() {
         // O Brick só oferece o meio que o pedido combinou. Quem escolheu PIX
         // levou desconto; deixar o cartão à mão aqui seria oferecer um
         // caminho que o servidor vai recusar depois.
+        //
+        // Desligar um meio é OMITIR a chave. Não existe valor "none": passar
+        // isso faz o Mercado Pago recusar a configuração inteira com
+        // "Payment Method (ticket): [none] is invalid", e o Brick nem monta —
+        // a tela fica no erro genérico dele. Aqui se lista só o que entra.
         const meios = p.forma_pagamento === 'pix'
-          ? { bankTransfer: 'all', creditCard: 'none', debitCard: 'none', ticket: 'none', mercadoPago: 'none' }
-          : { creditCard: 'all', debitCard: 'all', bankTransfer: 'none', ticket: 'none', mercadoPago: 'none' }
+          ? { bankTransfer: 'all' }
+          : { creditCard: 'all', debitCard: 'all' }
 
         brick.current = await mp.bricks().create('payment', 'brick-pagamento', {
           initialization: { amount: p.total },
