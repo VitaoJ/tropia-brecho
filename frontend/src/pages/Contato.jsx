@@ -1,17 +1,32 @@
 import AFazer from '../components/AFazer'
+import {
+  EMAIL, INSTAGRAM, INSTAGRAM_URL,
+  TELEFONE_EXIBICAO, WHATSAPP_URL, RECADO_ATENDIMENTO,
+} from '../utils/contato'
 
 const CONTAINER = 'max-w-3xl mx-auto px-4 md:px-8'
-
-// E-mail da loja, o mesmo usado no painel. Trocar aqui se houver um endereço
-// separado para atendimento.
-const EMAIL = 'tropia.brecho@gmail.com'
 
 const ASSUNTOS = [
   ['Dúvida sobre uma peça', 'Medidas, condição, caimento. Cite o nome da peça que a resposta vem mais rápida.'],
   ['Pedido em andamento', 'Tenha em mãos o número do pedido, aquele código de 8 caracteres da tela de confirmação.'],
   ['Upcycling e customização', 'Descreva a transformação que quer e mande foto da peça.'],
-  ['Quero vender peças', 'Conte o que tem e mande fotos.'],
 ]
+
+/* Um canal por cartão. No celular empilham; no desktop dividem a linha. */
+function Canal({ rotulo, valor, href, externo = false }) {
+  const fora = externo ? { target: '_blank', rel: 'noreferrer noopener' } : {}
+  return (
+    <a href={href} {...fora}
+      className="border border-[#d6c8b3] rounded-sm bg-[#f2ead9] p-4 md:p-5 block
+        hover:border-[#250000] transition-colors">
+      <p className="text-[10px] tracking-[0.2em] text-[#654a2b] uppercase mb-1.5">{rotulo}</p>
+      <span className="text-[15px] md:text-base text-[#250000] underline underline-offset-4
+        decoration-[#d6c8b3] group-hover:decoration-[#250000] break-all">
+        {valor}
+      </span>
+    </a>
+  )
+}
 
 export default function Contato() {
   return (
@@ -25,24 +40,18 @@ export default function Contato() {
       </h1>
 
       <p className="text-[15px] md:text-base leading-relaxed text-[#250000] max-w-[62ch] mb-8">
-        Somos gente pequena atendendo pessoa por pessoa. Responder pode levar
-        algumas horas, mas responde.
+        {RECADO_ATENDIMENTO}
       </p>
 
-      <div className="border border-[#d6c8b3] rounded-sm bg-[#f2ead9] p-4 md:p-5 mb-4">
-        <p className="text-[10px] tracking-[0.2em] text-[#654a2b] uppercase mb-1.5">E-mail</p>
-        <a href={`mailto:${EMAIL}`}
-          className="text-[15px] md:text-lg text-[#250000] underline underline-offset-4 decoration-[#d6c8b3] hover:decoration-[#250000] transition-colors break-all">
-          {EMAIL}
-        </a>
+      <div className="grid gap-3 md:grid-cols-3 mb-4">
+        <Canal rotulo="WhatsApp" valor={TELEFONE_EXIBICAO} href={WHATSAPP_URL} externo />
+        <Canal rotulo="Instagram" valor={`@${INSTAGRAM}`} href={INSTAGRAM_URL} externo />
+        <Canal rotulo="E-mail" valor={EMAIL} href={`mailto:${EMAIL}`} />
       </div>
 
       <div className="mb-10 md:mb-14">
         <AFazer>
-          Faltam os outros canais: o @ do Instagram, o WhatsApp de atendimento e
-          o horário em que vocês respondem. Se a loja tiver endereço físico ou
-          ponto de retirada, também entra aqui. Confirme se este e-mail é mesmo
-          o de atendimento — hoje ele é o do painel.
+          Se a loja tiver endereço físico ou ponto de retirada, entra aqui.
         </AFazer>
       </div>
 

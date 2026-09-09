@@ -12,7 +12,7 @@ const CONTAINER = 'max-w-6xl mx-auto px-4 md:px-8'
 /* ─── Ticker ─────────────────────────────────────────────────── */
 function Ticker({ reverse = false, dark = false }) {
   const texto = dark
-    ? 'SUSTENTABILIDADE — MODA CIRCULAR — PEÇAS ÚNICAS — SEGUNDA MÃO — ESTILO ATEMPORAL — '
+    ? 'MODA CIRCULAR — SUSTENTABILIDADE — PEÇAS DE SEGUNDA MÃO — UPCYCLING — PEÇAS ÚNICAS — CUSTOMIZAÇÃO — '
     : 'FRETE PARA TODO BRASIL — PEÇAS SELECIONADAS — MODA CONSCIENTE — VINTAGE & CLÁSSICO — '
   return (
     <div className={`overflow-hidden py-2 md:py-2.5 border-y ${
@@ -125,59 +125,6 @@ function Hero({ pecas, total }) {
   )
 }
 
-/* ─── Índice de categorias ───────────────────────────────────────
-   Lista de sumário de revista, não quatro caixas coloridas.        */
-const CATEGORIAS = [
-  { nome: 'Feminino',   slug: 'feminino',   nota: 'Vestidos, blusas, alfaiataria' },
-  { nome: 'Masculino',  slug: 'masculino',  nota: 'Camisas, jaquetas, calças' },
-  { nome: 'Calçados',   slug: 'calcados',   nota: 'Tênis, botas, sandálias' },
-  { nome: 'Acessórios', slug: 'acessorios', nota: 'Bolsas, cintos, chapéus' },
-]
-
-function Indice() {
-  return (
-    <section className={`${CONTAINER} pt-14 md:pt-24`}>
-      <Revelar>
-        <div className="flex items-baseline justify-between mb-6 md:mb-10">
-          <h2 className="text-[10px] md:text-xs tracking-[0.32em] text-[#654a2b] uppercase">Índice</h2>
-          <span className="text-[10px] tracking-[0.2em] text-[#654a2b]/60">04 SEÇÕES</span>
-        </div>
-      </Revelar>
-
-      <div className="border-t border-[#250000]/15">
-        {CATEGORIAS.map((c, i) => (
-          <Revelar key={c.slug} atraso={i * 70}>
-            <Link to={`/catalogo?categoria=${c.slug}`}
-              className="indice-item group relative flex items-center gap-4 md:gap-8 py-5 md:py-7
-                border-b border-[#250000]/15 overflow-hidden">
-              {/* Preenchimento que sobe no hover */}
-              <span className="indice-fundo absolute inset-0 bg-[#250000] -z-0" />
-
-              <span className="relative z-10 text-[10px] md:text-xs tracking-[0.2em] text-[#654a2b] group-hover:text-[#ffc509] transition-colors duration-300 flex-none w-8">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-
-              <span className="relative z-10 font-black italic tracking-[-0.04em] leading-none
-                text-[#250000] group-hover:text-[#eae1d4] transition-colors duration-300"
-                style={{ fontSize: 'clamp(1.75rem, 6vw, 3.5rem)' }}>
-                {c.nome}
-              </span>
-
-              <span className="relative z-10 hidden lg:block text-xs text-[#654a2b] group-hover:text-[#eae1d4]/60 transition-colors duration-300">
-                {c.nota}
-              </span>
-
-              <span className="indice-seta relative z-10 ml-auto text-xl md:text-2xl text-[#250000] group-hover:text-[#ffc509] transition-colors duration-300">
-                →
-              </span>
-            </Link>
-          </Revelar>
-        ))}
-      </div>
-    </section>
-  )
-}
-
 /* ─── Manifesto ──────────────────────────────────────────────── */
 function Manifesto() {
   return (
@@ -269,7 +216,6 @@ export default function Home() {
       <Hero pecas={pecas} total={total} />
       <Ticker dark />
       <Avaliacoes />
-      <Indice />
       <Destaques pecas={pecas} />
       <Manifesto />
       <Ticker reverse />

@@ -109,16 +109,6 @@ h1, h2, h3 {
 }
 .esticar { transform-origin: left; animation: esticar 1.1s cubic-bezier(0.2, 0.75, 0.2, 1) both; }
 
-/* Item do índice de categorias: a seta corre até a margem no hover */
-.indice-item .indice-seta { transition: transform 0.45s cubic-bezier(0.2, 0.75, 0.2, 1); }
-.indice-item:hover .indice-seta { transform: translateX(0.75rem); }
-.indice-item .indice-fundo {
-  transform: scaleY(0);
-  transform-origin: bottom;
-  transition: transform 0.45s cubic-bezier(0.2, 0.75, 0.2, 1);
-}
-.indice-item:hover .indice-fundo { transform: scaleY(1); }
-
 @media (prefers-reduced-motion: reduce) {
   .surgir, .esticar, .ticker-animate, .ticker-animate-reverse {
     animation: none;

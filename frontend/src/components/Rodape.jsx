@@ -1,6 +1,13 @@
 import { Link } from 'react-router-dom'
 import { formatarPreco, FRETE_FIXO, FRETE_GRATIS_ACIMA_DE, DESCONTO_PIX } from '../utils/preco'
 import logoTexto from '../assets/logo-texto.svg'
+import { EMAIL, INSTAGRAM, INSTAGRAM_URL, TELEFONE_EXIBICAO, WHATSAPP_URL } from '../utils/contato'
+
+const CANAIS = [
+  ['WhatsApp', TELEFONE_EXIBICAO, WHATSAPP_URL],
+  ['Instagram', `@${INSTAGRAM}`, INSTAGRAM_URL],
+  ['E-mail', EMAIL, `mailto:${EMAIL}`],
+]
 
 const COLUNAS = [
   ['Acervo', [
@@ -22,7 +29,7 @@ export default function Rodape() {
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-10 md:py-14">
 
         {/* No celular a marca vem primeiro e as colunas empilham em duas */}
-        <div className="md:grid md:grid-cols-[1.4fr_1fr_1fr] md:gap-10">
+        <div className="md:grid md:grid-cols-[1.4fr_1fr_1fr_1.2fr] md:gap-10">
           <div className="mb-8 md:mb-0">
             <img src={logoTexto} alt="Tropia" className="h-8 md:h-9 object-contain invert mb-3" />
             <p className="text-[13px] leading-relaxed text-[#eae1d4]/70 max-w-[38ch]">
@@ -46,6 +53,22 @@ export default function Rodape() {
                 </ul>
               </div>
             ))}
+
+            {/* Fala com a gente. No celular ocupa a linha inteira embaixo das
+                duas colunas de links; no desktop vira a quarta coluna. */}
+            <div className="col-span-2 md:col-span-1">
+              <h2 className="text-[10px] tracking-[0.24em] text-[#eae1d4]/50 uppercase mb-3">Fala com a gente</h2>
+              <ul className="flex flex-col gap-2">
+                {CANAIS.map(([rotulo, valor, href]) => (
+                  <li key={rotulo}>
+                    <a href={href} target="_blank" rel="noreferrer noopener"
+                      className="text-[13px] text-[#eae1d4]/85 hover:text-[#ffc509] transition-colors break-all">
+                      <span className="text-[#eae1d4]/50">{rotulo} </span>{valor}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
