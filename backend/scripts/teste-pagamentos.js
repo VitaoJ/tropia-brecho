@@ -11,6 +11,7 @@
 import crypto from 'crypto'
 import dotenv from 'dotenv'
 import { pool } from '../src/db.js'
+import { meioConfere, valorConfere, statusDoPedidoPara } from '../src/utils/mercadoPago.js'
 dotenv.config()
 
 const API = 'http://localhost:3001/api'
@@ -83,7 +84,25 @@ s = await bater(ID, { ts: ts3, hash: assinar(ID, 'req-teste-1', ts3) })
 checar('assinatura correta passa da verificação', s !== 401, `veio ${s}`)
 checar('falha na consulta pede reenvio (500), não engole', [500, 200].includes(s), `veio ${s}`)
 
-console.log('\n4. Nada foi gravado por tentativa recusada')
+console.log('\n4. As regras que decidem se o pedido vira pago')
+// O Mercado Pago devolve payment_method_id "pix" mas payment_type_id
+// "bank_transfer". Comparar o TYPE com "pix" reprovava todo PIX legítimo
+// como divergente: o cliente pagava e o pedido nunca virava pago.
+checar('PIX chega como bank_transfer e é aceito', meioConfere('pix', 'bank_transfer'))
+checar('cartão de crédito é aceito no pedido em cartão', meioConfere('credit_card', 'credit_card'))
+checar('cartão de débito também', meioConfere('credit_card', 'debit_card'))
+checar('cartão NÃO passa num pedido fechado em PIX', !meioConfere('pix', 'credit_card'))
+checar('PIX NÃO passa num pedido fechado em cartão', !meioConfere('credit_card', 'bank_transfer'))
+
+checar('valor igual confere', valorConfere(67.15, 67.15))
+checar('centavo a mais não confere', !valorConfere(67.15, 67.16))
+checar('float não atrapalha (0.1+0.2)', valorConfere(0.1 + 0.2, 0.3))
+
+checar('approved leva o pedido a pago', statusDoPedidoPara('approved') === 'paid')
+checar('rejected cancela', statusDoPedidoPara('rejected') === 'cancelled')
+checar('em análise não mexe no pedido', statusDoPedidoPara('in_process') === null)
+
+console.log('\n5. Nada foi gravado por tentativa recusada')
 const { rows: [n] } = await pool.query(
   "SELECT COUNT(*)::int AS c FROM payment_events WHERE payment_id IN ($1, $2)",
   [ID, '9999999999']
@@ -96,7 +115,7 @@ const { rows: [p] } = await pool.query(
 )
 checar('nenhum pedido tocado pelas tentativas', p.c === 0, `${p.c} pedidos`)
 
-console.log('\n5. Assunto que não é pagamento não quebra')
+console.log('\n6. Assunto que não é pagamento não quebra')
 const ts4 = agora()
 const outro = await fetch(`${API}/pagamentos/webhook?type=plan&data.id=${ID}`, {
   method: 'POST',

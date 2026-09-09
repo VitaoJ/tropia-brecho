@@ -51,11 +51,18 @@ export const MEIOS = {
 /**
  * O `payment_type_id` que o Mercado Pago devolve bate com o meio do pedido?
  *
+ * ATENÇÃO aos dois campos, que é onde eu errei: no PIX o Mercado Pago devolve
+ * `payment_method_id: "pix"` mas `payment_type_id: "bank_transfer"`. Comparar
+ * o TYPE com "pix" reprovava todo pagamento por PIX como divergente — o
+ * cliente pagava, o pedido não virava pago e a peça voltava para a vitrine
+ * quando a reserva vencia. Confirmado na resposta crua guardada em
+ * payment_events.
+ *
  * `debit_card` entra junto de `credit_card` porque os dois são cartão para
  * efeito de desconto — nenhum dos dois tem o desconto do PIX.
  */
 export function meioConfere(formaDoPedido, tipoNoMercadoPago) {
-  if (formaDoPedido === 'pix') return tipoNoMercadoPago === 'pix'
+  if (formaDoPedido === 'pix') return ['bank_transfer', 'pix'].includes(tipoNoMercadoPago)
   return ['credit_card', 'debit_card'].includes(tipoNoMercadoPago)
 }
 
