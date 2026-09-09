@@ -236,6 +236,23 @@ export function excluirCupom(id, token) {
   return req(`/cupons/${id}`, { method: 'DELETE', token })
 }
 
+// ─── Pagamento ──────────────────────────────────────────────────────
+// A chave pública vem do servidor em vez de virar VITE_: assim trocar de
+// conta ou de ambiente não exige rebuild do frontend.
+export function configPagamento() {
+  return req('/pagamentos/config')
+}
+
+// O `pagamento` é o formData do Brick. O valor que vai junto é ignorado pelo
+// servidor de propósito — quem manda no preço é o pedido no banco.
+export function processarPagamento(pedidoId, pagamento) {
+  return req('/pagamentos/processar', { method: 'POST', body: { pedido_id: pedidoId, pagamento } })
+}
+
+export function statusPagamento(pedidoId) {
+  return req(`/pagamentos/${pedidoId}/status`)
+}
+
 // Formata "98.00" → "R$ 98,00"
 export function formatarPreco(valor) {
   return `R$ ${Number(valor).toFixed(2).replace('.', ',')}`

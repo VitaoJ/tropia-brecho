@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useReserva } from '../hooks/useReserva'
-import { criarPedido, cotarFrete } from '../services/api'
+import { criarPedido, cotarFrete, configPagamento } from '../services/api'
 import { formatarPreco, DESCONTO_PIX, calcularFrete } from '../utils/preco'
 import {
   mascaraCPF, mascaraTelefone, mascaraCEP, soDigitos,
@@ -315,7 +315,14 @@ export default function Checkout() {
       reserva.concluir()
       limpar()
       try { localStorage.removeItem(RASCUNHO) } catch { /* modo privado */ }
-      navigate(`/pedido/${pedido.id}`, { replace: true })
+
+      // O pedido está criado e a peça reservada por 30 min: agora paga. Se o
+      // pagamento online não estiver ligado, vai direto para a confirmação,
+      // que é o comportamento antigo — melhor que mandar a pessoa para uma
+      // tela de pagamento que não tem como cobrar.
+      let paga = false
+      try { paga = (await configPagamento()).ativo } catch { /* segue sem */ }
+      navigate(paga ? `/pagamento/${pedido.id}` : `/pedido/${pedido.id}`, { replace: true })
     } catch (err) {
       if (err.indisponiveis?.length) setCaidas(err.indisponiveis)
       setErroEnvio(err.message)

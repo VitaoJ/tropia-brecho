@@ -4,6 +4,7 @@ import Catalogo   from './pages/Catalogo'
 import Produto    from './pages/Produto'
 import Carrinho   from './pages/Carrinho'
 import Checkout   from './pages/Checkout'
+import Pagamento  from './pages/Pagamento'
 import PedidoConfirmado from './pages/PedidoConfirmado'
 import QuemSomos  from './pages/QuemSomos'
 import Upcycling  from './pages/Upcycling'
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/produto/:id" element={<Layout><Produto /></Layout>} />
         <Route path="/carrinho"    element={<Layout><Carrinho /></Layout>} />
         <Route path="/checkout"    element={<Layout><Checkout /></Layout>} />
+        <Route path="/pagamento/:id" element={<Layout><Pagamento /></Layout>} />
         <Route path="/pedido/:id"  element={<Layout><PedidoConfirmado /></Layout>} />
         <Route path="/favoritos"   element={<Layout><Favoritos /></Layout>} />
         <Route path="/upcycling"   element={<Layout><Upcycling /></Layout>} />
