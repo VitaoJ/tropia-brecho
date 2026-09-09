@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import ConfirmarAcao from '@/components/admin/ConfirmarAcao'
 import {
   listarAvaliacoesAdmin, criarAvaliacao, atualizarAvaliacao,
   excluirAvaliacao, listarEstoque,
@@ -99,6 +100,7 @@ function Form({ inicial, pecas, onSalvar, onFechar, salvando, token }) {
 }
 
 export default function SecaoAvaliacoes({ token, onErro }) {
+  const [paraExcluir, setParaExcluir] = useState(null)
   const [avaliacoes, setAvaliacoes] = useState([])
   const [pecas, setPecas] = useState([])
   const [modal, setModal] = useState(null)
@@ -135,7 +137,7 @@ export default function SecaoAvaliacoes({ token, onErro }) {
   }
 
   async function remover(a) {
-    if (!confirm(`Apagar a avaliação de ${a.autor}?`)) return
+    setParaExcluir(null)
     try { await excluirAvaliacao(a.id, token); await carregar() }
     catch (e) { onErro(e.message) }
   }
@@ -198,7 +200,7 @@ export default function SecaoAvaliacoes({ token, onErro }) {
                   <button onClick={() => alternar(a)} className="text-[#654a2b] underline underline-offset-2">
                     {a.publicada ? 'Tirar da home' : 'Publicar'}
                   </button>
-                  <button onClick={() => remover(a)} className="text-[#c44b00] underline underline-offset-2">
+                  <button onClick={() => setParaExcluir(a)} className="text-[#c44b00] underline underline-offset-2">
                     Excluir
                   </button>
                 </div>
@@ -212,6 +214,15 @@ export default function SecaoAvaliacoes({ token, onErro }) {
         <Form inicial={modal.inicial} pecas={pecas} token={token}
           onSalvar={salvar} onFechar={() => setModal(null)} salvando={salvando} />
       )}
+
+      <ConfirmarAcao
+        aberto={!!paraExcluir} destrutivo
+        titulo={`Apagar a avaliação de ${paraExcluir?.autor ?? ''}?`}
+        descricao="O texto e a foto somem do site e do painel. Não dá para desfazer."
+        rotuloConfirmar="Apagar avaliação"
+        aoConfirmar={() => remover(paraExcluir)}
+        aoFechar={() => setParaExcluir(null)}
+      />
     </>
   )
 }

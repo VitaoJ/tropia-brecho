@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
 import Home       from './pages/Home'
 import Catalogo   from './pages/Catalogo'
 import Produto    from './pages/Produto'
@@ -10,10 +11,22 @@ import QuemSomos  from './pages/QuemSomos'
 import Upcycling  from './pages/Upcycling'
 import Contato    from './pages/Contato'
 import Favoritos  from './pages/Favoritos'
-import AdminLogin from './pages/admin/Login'
-import Dashboard  from './pages/admin/Dashboard'
+// O painel entra por carregamento tardio: ele traz junto os componentes do
+// shadcn (Radix, cva, ícones), que ninguém que só quer comprar precisa
+// baixar. São ~26 kB comprimidos que saem do caminho do cliente.
+const AdminLogin = lazy(() => import('./pages/admin/Login'))
+const Dashboard  = lazy(() => import('./pages/admin/Dashboard'))
 import ScrollToTop from './components/ScrollToTop'
 import Layout from './components/Layout'
+
+/* O painel é do dono e abre em rede boa; um aviso simples basta. */
+function TelaCarregando() {
+  return (
+    <div className="min-h-screen bg-[#eae1d4] flex items-center justify-center">
+      <p className="text-sm text-[#654a2b]">Carregando o painel…</p>
+    </div>
+  )
+}
 
 export default function App() {
   return (
@@ -34,8 +47,8 @@ export default function App() {
         <Route path="/contato"     element={<Layout><Contato /></Layout>} />
 
         {/* Admin — layout próprio */}
-        <Route path="/admin"           element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin"           element={<Suspense fallback={<TelaCarregando />}><AdminLogin /></Suspense>} />
+        <Route path="/admin/dashboard" element={<Suspense fallback={<TelaCarregando />}><Dashboard /></Suspense>} />
       </Routes>
     </>
   )

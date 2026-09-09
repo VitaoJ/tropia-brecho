@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { listarPedidos, buscarPedidoAdmin, mudarStatusPedido, formatarPreco } from '../../services/api'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import ConfirmarAcao from '@/components/admin/ConfirmarAcao'
 
 /* Os mesmos nomes que o cliente vê, para não haver dois vocabulários para o
    mesmo pedido. A cor diz o que exige ação: âmbar espera, verde andou. */
@@ -48,16 +50,14 @@ function Etiqueta({ status }) {
 function Detalhe({ id, token, aoFechar, aoMudar, onErro }) {
   const [pedido, setPedido] = useState(null)
   const [salvando, setSalvando] = useState(false)
+  const [pedindoConfirmacao, setPedindoConfirmacao] = useState(null)
 
   useEffect(() => {
     buscarPedidoAdmin(id, token).then(r => setPedido(r.pedido)).catch(e => onErro(e.message))
   }, [id, token, onErro])
 
   const mudar = async (novo) => {
-    const aviso = novo === 'cancelled'
-      ? 'Cancelar devolve as peças para a vitrine. Confirma?'
-      : `Marcar como "${STATUS[novo].label}"?`
-    if (!confirm(aviso)) return
+    setPedindoConfirmacao(null)
     setSalvando(true)
     try {
       await mudarStatusPedido(id, novo, token)
@@ -69,21 +69,20 @@ function Detalhe({ id, token, aoFechar, aoMudar, onErro }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[70] bg-[#250000]/50 flex items-end md:items-center justify-center p-0 md:p-6"
-      onClick={aoFechar}>
-      <div className="bg-[#eae1d4] w-full md:max-w-2xl max-h-[92vh] overflow-y-auto rounded-t-lg md:rounded-sm"
-        onClick={e => e.stopPropagation()}>
-
-        <div className="sticky top-0 bg-[#eae1d4] border-b border-[#d6c8b3] px-4 md:px-6 py-3 flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-sm text-[#250000] font-medium">
-              Pedido {pedido?.numero ?? '…'}
-            </p>
-            {pedido && <p className="text-[11px] text-[#654a2b]">{data(pedido.criado_em)}</p>}
-          </div>
-          <button onClick={aoFechar} aria-label="Fechar"
-            className="w-9 h-9 flex-none flex items-center justify-center text-2xl leading-none text-[#250000]">×</button>
-        </div>
+    <Dialog open onOpenChange={(aberto) => { if (!aberto) aoFechar() }}>
+      {/* O DialogContent do Radix já traz o botão de fechar, prende o foco
+          dentro enquanto está aberto, devolve o foco para a linha da tabela ao
+          fechar e trava a rolagem do fundo — tudo que a versão feita à mão
+          não fazia. */}
+      <DialogContent className="bg-[#eae1d4] border-[#d6c8b3] p-0 gap-0
+        max-w-2xl max-h-[92vh] overflow-y-auto rounded-sm">
+        <DialogHeader className="sticky top-0 z-10 bg-[#eae1d4] border-b border-[#d6c8b3]
+          px-4 md:px-6 py-3 text-left space-y-0">
+          <DialogTitle className="text-sm text-[#250000] font-medium">
+            Pedido {pedido?.numero ?? '…'}
+          </DialogTitle>
+          {pedido && <p className="text-[11px] text-[#654a2b]">{data(pedido.criado_em)}</p>}
+        </DialogHeader>
 
         {!pedido ? (
           <p className="p-6 text-sm text-[#654a2b]">Carregando…</p>
@@ -165,7 +164,7 @@ function Detalhe({ id, token, aoFechar, aoMudar, onErro }) {
             {SEGUINTES[pedido.status]?.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-3 border-t border-[#d6c8b3]">
                 {SEGUINTES[pedido.status].map(s => (
-                  <button key={s} onClick={() => mudar(s)} disabled={salvando}
+                  <button key={s} onClick={() => setPedindoConfirmacao(s)} disabled={salvando}
                     className={`h-10 px-4 text-[12px] tracking-[0.08em] rounded-sm disabled:opacity-50 ${
                       s === 'cancelled'
                         ? 'border border-[#bf8f8f] text-[#7a1f1f] hover:bg-[#f0e6e6]'
@@ -178,8 +177,22 @@ function Detalhe({ id, token, aoFechar, aoMudar, onErro }) {
             )}
           </div>
         )}
-      </div>
-    </div>
+
+        <ConfirmarAcao
+          aberto={!!pedindoConfirmacao}
+          destrutivo={pedindoConfirmacao === 'cancelled'}
+          titulo={pedindoConfirmacao === 'cancelled'
+            ? 'Cancelar este pedido?'
+            : `Marcar como ${STATUS[pedindoConfirmacao]?.label.toLowerCase()}?`}
+          descricao={pedindoConfirmacao === 'cancelled'
+            ? 'As peças voltam para a vitrine na hora e ficam disponíveis para outra pessoa. Não dá para desfazer.'
+            : 'O cliente vê essa mudança ao consultar o pedido.'}
+          rotuloConfirmar={pedindoConfirmacao === 'cancelled' ? 'Cancelar pedido' : 'Confirmar'}
+          aoConfirmar={() => mudar(pedindoConfirmacao)}
+          aoFechar={() => setPedindoConfirmacao(null)}
+        />
+      </DialogContent>
+    </Dialog>
   )
 }
 

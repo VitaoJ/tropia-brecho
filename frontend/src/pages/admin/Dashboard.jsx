@@ -10,6 +10,7 @@ import { formatarPreco, calcularDesconto } from '../../utils/preco'
 import { otimizar } from '../../utils/imagem'
 import GerenciadorFotos from './GerenciadorFotos'
 import SecaoAvaliacoes from './SecaoAvaliacoes'
+import ConfirmarAcao from '@/components/admin/ConfirmarAcao'
 import SecaoPedidos from './SecaoPedidos'
 import SecaoVisaoGeral from './SecaoVisaoGeral'
 import SecaoRelatorios from './SecaoRelatorios'
@@ -271,6 +272,7 @@ function FormCupom({ onSalvar, onFechar, salvando }) {
 }
 
 function SecaoCupons({ token, onErro }) {
+  const [paraExcluir, setParaExcluir] = useState(null)
   const [cupons, setCupons] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [modal, setModal] = useState(false)
@@ -302,7 +304,7 @@ function SecaoCupons({ token, onErro }) {
   }
 
   const remover = async (c) => {
-    if (!confirm(`Excluir o cupom ${c.code}?`)) return
+    setParaExcluir(null)
     try {
       const { mensagem } = await excluirCupom(c.id, token)
       if (mensagem.includes('desativado')) onErro(mensagem)
@@ -361,7 +363,7 @@ function SecaoCupons({ token, onErro }) {
                   className="flex-1 h-9 border border-[#d6c8b3] rounded-sm">
                   {c.active ? 'Desativar' : 'Ativar'}
                 </button>
-                <button onClick={() => remover(c)}
+                <button onClick={() => setParaExcluir(c)}
                   className="flex-1 h-9 border border-[#c44b00] text-[#c44b00] rounded-sm">
                   Excluir
                 </button>
@@ -401,7 +403,7 @@ function SecaoCupons({ token, onErro }) {
                       <button onClick={() => alternar(c)} className="px-2 py-1 border border-[#d6c8b3] rounded-sm hover:bg-[#ddcfb9]">
                         {c.active ? 'Desativar' : 'Ativar'}
                       </button>
-                      <button onClick={() => remover(c)} className="px-2 py-1 border border-[#c44b00] text-[#c44b00] rounded-sm hover:bg-[#ffe0cc]">
+                      <button onClick={() => setParaExcluir(c)} className="px-2 py-1 border border-[#c44b00] text-[#c44b00] rounded-sm hover:bg-[#ffe0cc]">
                         Excluir
                       </button>
                     </div>
@@ -415,6 +417,15 @@ function SecaoCupons({ token, onErro }) {
       )}
 
       {modal && <FormCupom onSalvar={salvar} onFechar={() => setModal(false)} salvando={salvando} />}
+
+      <ConfirmarAcao
+        aberto={!!paraExcluir} destrutivo
+        titulo={`Excluir o cupom ${paraExcluir?.code ?? ''}?`}
+        descricao="Se o cupom já foi usado em algum pedido, ele é desativado em vez de apagado — o histórico da venda precisa dele."
+        rotuloConfirmar="Excluir cupom"
+        aoConfirmar={() => remover(paraExcluir)}
+        aoFechar={() => setParaExcluir(null)}
+      />
     </>
   )
 }
@@ -430,6 +441,7 @@ export default function Dashboard() {
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState(null)
   const [secao, setSecao] = useState('visao')
+  const [pecaParaExcluir, setPecaParaExcluir] = useState(null)
 
   const sair = useCallback(() => {
     logout()
@@ -481,7 +493,7 @@ export default function Dashboard() {
   }
 
   const excluir = async (p) => {
-    if (!confirm(`Excluir "${p.name}"? Essa ação não pode ser desfeita.`)) return
+    setPecaParaExcluir(null)
     try {
       await excluirProduto(p.id, token)
       setPecas(prev => prev.filter(x => x.id !== p.id))
@@ -609,7 +621,7 @@ export default function Dashboard() {
                     <button onClick={() => alternarVendida(p)} className="flex-1 h-9 border border-[#d6c8b3] rounded-sm">
                       {p.sold ? 'Repor' : 'Vender'}
                     </button>
-                    <button onClick={() => excluir(p)} className="flex-1 h-9 border border-[#c44b00] text-[#c44b00] rounded-sm">
+                    <button onClick={() => setPecaParaExcluir(p)} className="flex-1 h-9 border border-[#c44b00] text-[#c44b00] rounded-sm">
                       Excluir
                     </button>
                   </div>
@@ -672,7 +684,7 @@ export default function Dashboard() {
                         <button onClick={() => alternarVendida(p)} className="px-2 py-1 border border-[#d6c8b3] rounded-sm hover:bg-[#ddcfb9]">
                           {p.sold ? 'Repor' : 'Vender'}
                         </button>
-                        <button onClick={() => excluir(p)} className="px-2 py-1 border border-[#c44b00] text-[#c44b00] rounded-sm hover:bg-[#ffe0cc]">
+                        <button onClick={() => setPecaParaExcluir(p)} className="px-2 py-1 border border-[#c44b00] text-[#c44b00] rounded-sm hover:bg-[#ffe0cc]">
                           Excluir
                         </button>
                       </div>
@@ -691,6 +703,15 @@ export default function Dashboard() {
         <FormPeca inicial={modal.inicial} categorias={categorias}
           onSalvar={salvar} onFechar={() => setModal(null)} salvando={salvando} token={token} />
       )}
+
+      <ConfirmarAcao
+        aberto={!!pecaParaExcluir} destrutivo
+        titulo={`Excluir "${pecaParaExcluir?.name ?? ''}"?`}
+        descricao="A peça sai do acervo junto com as fotos e o histórico dela. Não dá para desfazer — se ela só saiu de estoque, marque como vendida em vez de excluir."
+        rotuloConfirmar="Excluir peça"
+        aoConfirmar={() => excluir(pecaParaExcluir)}
+        aoFechar={() => setPecaParaExcluir(null)}
+      />
     </div>
   )
 }
