@@ -116,6 +116,17 @@ export default function Navbar() {
   const linkClasse = (path) =>
     `uppercase transition-colors ${pathname === path ? 'text-[#250000]' : 'text-[#654a2b] hover:text-[#250000]'}`
 
+  // Clicar na marca já estando na home não navega para lugar nenhum — o
+  // React Router vê a mesma rota e não faz nada. Aqui isso vira a volta para
+  // a capa, que é o que se espera da logo.
+  const voltarAoTopo = (e) => {
+    if (pathname !== '/') return
+    e.preventDefault()
+    const suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: suave ? 'smooth' : 'auto' })
+    setMenu(false)
+  }
+
   return (
     <>
       <nav className="sticky top-0 z-50 bg-[#eae1d4]">
@@ -129,7 +140,7 @@ export default function Navbar() {
             </svg>
           </button>
 
-          <Link to="/" className="absolute left-1/2 -translate-x-1/2" aria-label="Tropia, início">
+          <Link to="/" onClick={voltarAoTopo} className="absolute left-1/2 -translate-x-1/2" aria-label="Tropia, início">
             <img src={logoTexto} alt="Tropia" className="h-12 object-contain" />
           </Link>
 
@@ -138,7 +149,7 @@ export default function Navbar() {
 
         {/* ── Desktop: marca centralizada em cima; busca, links e ícones embaixo ── */}
         <div className="hidden md:block max-w-6xl mx-auto px-8 pt-3 pb-2.5">
-          <Link to="/" className="block w-fit mx-auto" aria-label="Tropia, início">
+          <Link to="/" onClick={voltarAoTopo} className="block w-fit mx-auto" aria-label="Tropia, início">
             <img src={logoTexto} alt="Tropia" className="h-12 object-contain" />
           </Link>
 
@@ -154,8 +165,11 @@ export default function Navbar() {
                   <div key={l.path} className="relative group">
                     <Link to={l.path} className={`${linkClasse(l.path)} inline-flex items-center gap-1.5`}>
                       {l.label}
-                      <span aria-hidden="true"
-                        className="text-[8px] transition-transform duration-300 group-hover:rotate-180">▾</span>
+                      <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                        className="transition-transform duration-300 group-hover:rotate-180">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
                     </Link>
 
                     <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50
@@ -228,8 +242,11 @@ export default function Navbar() {
                       <button type="button" onClick={() => setAbertas(a => !a)}
                         aria-expanded={abertas} aria-label={abertas ? 'Fechar categorias' : 'Abrir categorias'}
                         className="flex-none w-11 h-11 -mr-2 flex items-center justify-center text-[#654a2b]">
-                        <span aria-hidden="true"
-                          className={`text-[10px] transition-transform duration-300 ${abertas ? 'rotate-180' : ''}`}>▾</span>
+                        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                          className={`transition-transform duration-300 ${abertas ? 'rotate-180' : ''}`}>
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
                       </button>
                     )}
                   </div>

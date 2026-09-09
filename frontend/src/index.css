@@ -56,8 +56,11 @@ h1, h2, h3 {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-.ticker-animate { animation: ticker 20s linear infinite; }
-.ticker-animate-reverse { animation: ticker 24s linear infinite reverse; }
+/* As durações saem da largura do texto, não de gosto: a faixa de cima anda
+   3271px por volta e a de baixo 2743px, então 36s e 30s deixam as duas em
+   ~90px/s. Mudou a frase? A largura muda e a velocidade junto — remedir. */
+.ticker-animate { animation: ticker 36s linear infinite; }
+.ticker-animate-reverse { animation: ticker 30s linear infinite reverse; }
 
 /* ─── Textura ────────────────────────────────────────────────────
    Grão sutil de papel: o acervo é físico, usado, impresso em fanzine.

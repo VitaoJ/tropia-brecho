@@ -20,7 +20,11 @@ function Ticker({ reverse = false, dark = false }) {
         ? 'bg-[#01530b] text-[#eae1d4] border-[#01530b]'
         : 'bg-transparent text-[#654a2b] border-[#d6c8b3]'
     }`}>
-      <div className={`whitespace-nowrap text-[10px] md:text-[11px] tracking-[0.22em] ${reverse ? 'ticker-animate-reverse' : 'ticker-animate'}`}>
+      {/* w-max é o que faz o laço fechar: sem ele a div fica com a largura da
+          tela, e o -50% da animação para no meio de uma frase em vez de cair
+          numa repetição inteira — a faixa saltava a cada volta e andava a 9
+          px/s. Com a largura do conteúdo, metade dele são 4 das 8 cópias. */}
+      <div className={`w-max whitespace-nowrap text-[10px] md:text-[11px] tracking-[0.22em] ${reverse ? 'ticker-animate-reverse' : 'ticker-animate'}`}>
         {texto.repeat(8)}
       </div>
     </div>
