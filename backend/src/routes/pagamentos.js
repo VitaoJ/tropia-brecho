@@ -250,16 +250,49 @@ router.post('/processar', async (req, res) => {
 // ─── Consulta de status ─────────────────────────────────────────────
 // A tela do PIX pergunta de tempos em tempos se caiu. Devolve só status —
 // nada de valor, dado do pagador ou do cartão.
+//
+// Esta rota também CONFIRMA o pagamento, não só relata. Sem isso o PIX
+// dependeria inteiramente do webhook, e enquanto ele não estiver configurado
+// o cliente pagaria, o pedido ficaria pendente e a peça voltaria para a
+// vitrine em 30 minutos. Também vale como rede: notificação perdida deixa de
+// custar uma venda.
+//
+// Continua sendo seguro porque não confia no navegador em nada: ele só diz
+// qual PEDIDO olhar. O id do pagamento vem do nosso banco, e o que aconteceu
+// vem da API do Mercado Pago — o mesmo caminho do webhook.
 router.get('/:pedidoId/status', async (req, res) => {
   const pedidoId = texto(req.params.pedidoId)
   if (!UUID.test(pedidoId)) return res.status(400).json({ erro: 'Pedido inválido' })
 
   try {
-    const { rows: [pedido] } = await query(
-      'SELECT status, payment_status FROM orders WHERE id = $1',
+    let { rows: [pedido] } = await query(
+      'SELECT status, payment_status, payment_id FROM orders WHERE id = $1',
       [pedidoId]
     )
     if (!pedido) return res.status(404).json({ erro: 'Pedido não encontrado' })
+
+    if (pedido.status === 'pending' && pedido.payment_id && pagamentoAtivo()) {
+      try {
+        const pagamento = await consultarPagamento(pedido.payment_id)
+        // Só aplica se o pagamento aponta de volta para este pedido: um
+        // payment_id trocado no banco não pode confirmar pedido alheio.
+        if (pagamento.pedidoId === pedidoId) {
+          const r = await aplicarPagamento(pagamento)
+          if (r.acao === 'paid' || r.acao === 'cancelled') {
+            console.log(`Consulta · pagamento ${pagamento.id} → ${r.acao} (sem webhook)`)
+            ;({ rows: [pedido] } = await query(
+              'SELECT status, payment_status, payment_id FROM orders WHERE id = $1',
+              [pedidoId]
+            ))
+          }
+        }
+      } catch (err) {
+        // Mercado Pago fora do ar não pode quebrar a tela: devolve o que o
+        // banco sabe, e a próxima volta tenta de novo.
+        console.error(`Consulta do pagamento ${pedido.payment_id}:`, err?.message)
+      }
+    }
+
     res.json({ status: pedido.status, pagamento: pedido.payment_status })
   } catch (err) {
     console.error('GET /pagamentos/:id/status:', err)
