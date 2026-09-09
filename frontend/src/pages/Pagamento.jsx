@@ -228,6 +228,10 @@ export default function Pagamento() {
         setRecusado({
           titulo: 'Não deu para concluir',
           texto: err.message || 'Tente de novo em instantes. Nada foi cobrado.',
+          // O que o Mercado Pago respondeu. Vai para a tela em letra miúda
+          // porque "não deu para concluir" sozinho não permite a ninguém —
+          // nem à loja — descobrir o que aconteceu.
+          detalhe: err.detalhe ?? null,
         })
       }
       throw err
@@ -265,7 +269,14 @@ export default function Pagamento() {
 
       {recusado && (
         <div className="mb-5">
-          <Erro titulo={recusado.titulo}>{recusado.texto}</Erro>
+          <Erro titulo={recusado.titulo}>
+            {recusado.texto}
+            {recusado.detalhe && (
+              <span className="block mt-2 text-[11px] opacity-70 break-words">
+                Mercado Pago: {recusado.detalhe}
+              </span>
+            )}
+          </Erro>
         </div>
       )}
 

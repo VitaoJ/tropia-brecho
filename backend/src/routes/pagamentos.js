@@ -241,9 +241,24 @@ router.post('/processar', async (req, res) => {
         : null,
     })
   } catch (err) {
-    // O SDK devolve o motivo do Mercado Pago; o cliente vê algo humano.
-    console.error('POST /pagamentos/processar:', err?.message, err?.cause ?? '')
-    res.status(502).json({ erro: 'Não foi possível processar o pagamento. Tente novamente.' })
+    // O SDK não lança um Error: ele joga o corpo de erro do Mercado Pago cru
+    // (`throw await response.json()`), com `message` e uma lista `cause`.
+    //
+    // Esse motivo VOLTA na resposta de propósito. Antes ele ia só para o log
+    // do servidor, e quem está com a loja no ar não tem como ler log do
+    // Railway no meio de um atendimento: a falha virava "não deu para
+    // concluir" e acabava ali. Não há segredo nesses textos — são sobre a
+    // requisição, não sobre a conta.
+    const motivos = Array.isArray(err?.cause)
+      ? err.cause.map(c => c?.description ?? c?.code).filter(Boolean)
+      : []
+    const detalhe = [err?.message, ...motivos].filter(Boolean).join(' · ') || null
+
+    console.error(`POST /pagamentos/processar (pedido ${pedidoId}):`, detalhe ?? err)
+    res.status(502).json({
+      erro: 'Não foi possível processar o pagamento. Tente novamente.',
+      detalhe,
+    })
   }
 })
 
