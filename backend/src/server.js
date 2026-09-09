@@ -13,6 +13,7 @@ import pagamentosRouter from './routes/pagamentos.js'
 import authRouter       from './routes/auth.js'
 import categoriasRouter from './routes/categorias.js'
 import cuponsRouter     from './routes/cupons.js'
+import relatoriosRouter from './routes/relatorios.js'
 
 dotenv.config()
 
@@ -79,6 +80,7 @@ app.use('/api/pagamentos',  pagamentosRouter)
 app.use('/api/auth',        authRouter)
 app.use('/api/categorias',  categoriasRouter)
 app.use('/api/cupons',      cuponsRouter)
+app.use('/api/relatorios',  relatoriosRouter)
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', app: 'Tropia Brechó' }))
 

@@ -10,6 +10,9 @@ import { formatarPreco, calcularDesconto } from '../../utils/preco'
 import { otimizar } from '../../utils/imagem'
 import GerenciadorFotos from './GerenciadorFotos'
 import SecaoAvaliacoes from './SecaoAvaliacoes'
+import SecaoPedidos from './SecaoPedidos'
+import SecaoVisaoGeral from './SecaoVisaoGeral'
+import SecaoRelatorios from './SecaoRelatorios'
 import logoSimbolo from '../../assets/logo-simbolo.svg'
 
 const CONDICOES = [
@@ -426,7 +429,7 @@ export default function Dashboard() {
   const [modal, setModal] = useState(null)   // null | { inicial, id }
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState(null)
-  const [secao, setSecao] = useState('estoque')
+  const [secao, setSecao] = useState('visao')
 
   const sair = useCallback(() => {
     logout()
@@ -499,23 +502,33 @@ export default function Dashboard() {
 
   const disponiveis = pecas.filter(p => !p.sold).length
 
-  const SECOES = [['estoque', 'ESTOQUE'], ['cupons', 'CUPONS'], ['avaliacoes', 'AVALIAÇÕES']]
+  const SECOES = [
+    ['visao', 'VISÃO GERAL'],
+    ['pedidos', 'PEDIDOS'],
+    ['estoque', 'ESTOQUE'],
+    ['cupons', 'CUPONS'],
+    ['avaliacoes', 'AVALIAÇÕES'],
+    ['relatorios', 'RELATÓRIOS'],
+  ]
 
   return (
     <div className="min-h-screen bg-[#eae1d4] md:flex">
       {/* Topo escuro no mobile; no desktop vira a coluna lateral */}
       <aside className="md:w-56 md:flex-none bg-[#250000] text-[#eae1d4] flex md:flex-col md:min-h-screen
         sticky top-0 z-40 items-center md:items-stretch justify-between md:justify-start px-4 md:px-0 h-14 md:h-auto">
-        <div className="flex items-center gap-3 md:px-5 md:h-16 md:border-b border-[#432d1c]">
+        <div className="flex-none flex items-center gap-3 md:px-5 md:h-16 md:border-b border-[#432d1c]">
           <img src={logoSimbolo} alt="Tropia" className="h-7 w-7 md:h-8 md:w-8 object-contain invert" />
           <span className="text-sm tracking-[0.2em]">TROPIA</span>
         </div>
 
         {/* Seções: abas no mobile, lista no desktop */}
-        <nav className="flex md:flex-col md:py-4 text-xs tracking-[0.1em] md:flex-1 gap-1 md:gap-0">
+        {/* Seis seções não cabem numa barra de 375px: no celular a lista
+            rola na horizontal em vez de espremer e subir por cima da marca. */}
+        <nav className="flex md:flex-col md:py-4 text-xs tracking-[0.1em] md:flex-1 gap-1 md:gap-0
+          min-w-0 overflow-x-auto md:overflow-visible escondeBarra">
           {SECOES.map(([id, label]) => (
             <button key={id} onClick={() => setSecao(id)}
-              className={`px-3 md:px-5 py-1.5 md:py-3 text-left rounded-sm md:rounded-none md:border-l-2 ${
+              className={`flex-none whitespace-nowrap px-3 md:px-5 py-1.5 md:py-3 text-left rounded-sm md:rounded-none md:border-l-2 ${
                 secao === id
                   ? 'bg-[#432d1c] md:border-[#ffc509]'
                   : 'md:border-transparent opacity-70 hover:opacity-100'
@@ -523,13 +536,10 @@ export default function Dashboard() {
               {label}
             </button>
           ))}
-          <span className="hidden md:block px-5 py-3 opacity-40 cursor-not-allowed">VISÃO GERAL — em breve</span>
-          <span className="hidden md:block px-5 py-3 opacity-40 cursor-not-allowed">PEDIDOS — em breve</span>
-          <span className="hidden md:block px-5 py-3 opacity-40 cursor-not-allowed">RELATÓRIOS — em breve</span>
         </nav>
 
         <button onClick={sair}
-          className="text-xs tracking-[0.1em] opacity-70 hover:opacity-100 md:px-5 md:py-4 md:text-left md:border-t border-[#432d1c]">
+          className="flex-none text-xs tracking-[0.1em] opacity-70 hover:opacity-100 md:px-5 md:py-4 md:text-left md:border-t border-[#432d1c]">
           SAIR
         </button>
       </aside>
@@ -538,7 +548,10 @@ export default function Dashboard() {
       <main className="flex-1 min-w-0 p-4 md:p-8">
         {erro && <p className="text-xs text-[#c44b00] bg-[#ffe0cc] px-3 py-2 rounded-sm mb-4">{erro}</p>}
 
-        {secao === 'avaliacoes' ? <SecaoAvaliacoes token={token} onErro={setErro} />
+        {secao === 'visao' ? <SecaoVisaoGeral token={token} onErro={setErro} aoIrParaPedidos={() => setSecao('pedidos')} />
+         : secao === 'pedidos' ? <SecaoPedidos token={token} onErro={setErro} />
+         : secao === 'relatorios' ? <SecaoRelatorios token={token} onErro={setErro} />
+         : secao === 'avaliacoes' ? <SecaoAvaliacoes token={token} onErro={setErro} />
          : secao === 'cupons' ? <SecaoCupons token={token} onErro={setErro} /> : <>
         <div className="flex items-center justify-between gap-3 mb-5 md:mb-6">
           <div>

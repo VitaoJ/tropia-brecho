@@ -378,6 +378,11 @@ router.get('/:id', requireAdmin, async (req, res) => {
         status: o.status,
         forma_pagamento: o.payment_method,
         payment_id: o.payment_id,
+        // O status do Mercado Pago é mais granular que o nosso: "in_process",
+        // "rejected", ou as nossas marcas de divergência. É o que responde
+        // "por que este pedido não virou pago?".
+        payment_status: o.payment_status,
+        entrega: o.shipping_service,
         cupom: o.coupon_code,
         subtotal: Number(o.subtotal),
         desconto: Number(o.discount),

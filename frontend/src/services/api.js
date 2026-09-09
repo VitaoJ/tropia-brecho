@@ -123,6 +123,25 @@ export function buscarPedidoPublico(id) {
   return get(`/pedidos/${id}/publico`)
 }
 
+/* ─── Painel ─────────────────────────────────────────────────── */
+export function listarPedidos({ status, pagina = 1, limite = 30 } = {}, token) {
+  const q = new URLSearchParams({ pagina, limite })
+  if (status) q.set('status', status)
+  return req(`/pedidos?${q}`, { token })
+}
+
+export function buscarPedidoAdmin(id, token) {
+  return req(`/pedidos/${id}`, { token })
+}
+
+export function mudarStatusPedido(id, status, token) {
+  return req(`/pedidos/${id}/status`, { method: 'PUT', body: { status }, token })
+}
+
+export function buscarRelatorios(token) {
+  return req('/relatorios', { token })
+}
+
 /* ─── Frete ──────────────────────────────────────────────────── */
 
 // Preços e prazos reais para o carrinho e o CEP. O servidor usa o preço e as
