@@ -120,7 +120,7 @@ export default function Navbar() {
       <nav className="sticky top-0 z-50 bg-[#eae1d4] border-b border-[#d6c8b3]">
         {/* ── Celular: menu, marca e carrinho. A busca e os links moram no
              painel, porque seis links não cabem numa barra de 375px. ── */}
-        <div className="md:hidden h-14 px-4 flex items-center justify-between gap-3">
+        <div className="md:hidden h-16 px-4 flex items-center justify-between gap-3">
           <button onClick={() => setMenu(true)} aria-label="Abrir menu" aria-expanded={menu}
             className="p-1 -ml-1 flex-none">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#250000" strokeWidth="1.6" strokeLinecap="round">
@@ -129,7 +129,7 @@ export default function Navbar() {
           </button>
 
           <Link to="/" className="absolute left-1/2 -translate-x-1/2" aria-label="Tropia, início">
-            <img src={logoTexto} alt="Tropia" className="h-9 object-contain" />
+            <img src={logoTexto} alt="Tropia" className="h-12 object-contain" />
           </Link>
 
           <Icones quantidade={quantidade} />
@@ -198,7 +198,7 @@ export default function Navbar() {
           <div className="bg-[#eae1d4] px-4 pt-4 pb-6 flex flex-col gap-4"
             onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <img src={logoTexto} alt="Tropia" className="h-9 object-contain" />
+              <img src={logoTexto} alt="Tropia" className="h-11 object-contain" />
               <button onClick={() => setMenu(false)} aria-label="Fechar menu"
                 className="w-9 h-9 -mr-2 flex items-center justify-center text-2xl leading-none text-[#250000]">
                 ×

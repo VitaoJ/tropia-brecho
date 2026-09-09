@@ -17,7 +17,7 @@ function Ticker({ reverse = false, dark = false }) {
   return (
     <div className={`overflow-hidden py-2 md:py-2.5 border-y ${
       dark
-        ? 'bg-[#250000] text-[#eae1d4] border-[#250000]'
+        ? 'bg-[#01530b] text-[#eae1d4] border-[#01530b]'
         : 'bg-transparent text-[#654a2b] border-[#d6c8b3]'
     }`}>
       <div className={`whitespace-nowrap text-[10px] md:text-[11px] tracking-[0.22em] ${reverse ? 'ticker-animate-reverse' : 'ticker-animate'}`}>

@@ -34,15 +34,15 @@ function Cartao({ a }) {
           <img
             src={otimizar(a.foto, 500)}
             srcSet={fontes(a.foto, [300, 400, 500, 650, 800])}
-            sizes="(min-width: 1024px) 23vw, (min-width: 768px) 33vw, 62vw"
+            sizes="(min-width: 1024px) 18vw, (min-width: 768px) 27vw, 52vw"
             alt={`Peça que ${a.autor} comprou`}
             loading="lazy"
             className="absolute inset-0 w-full h-full object-cover" />
         </div>
       )}
 
-      <figcaption className="flex flex-col gap-2.5 p-3 flex-1">
-        <blockquote className="text-[13px] md:text-[13.5px] leading-relaxed text-[#250000] flex-1">
+      <figcaption className="flex flex-col gap-2 p-2.5 flex-1">
+        <blockquote className="text-[12px] md:text-[12.5px] leading-relaxed text-[#250000] flex-1">
           “{a.texto}”
         </blockquote>
 
@@ -191,7 +191,7 @@ export default function Avaliacoes() {
           // porque esticá-lo até a altura dos outros deixaria um vazio grande.
           // self-start mantém todos alinhados pelo topo da faixa.
           <li key={a.id}
-            className={`w-[62vw] max-w-[230px] md:w-[calc((100%-3.75rem)/4.25)] md:max-w-none
+            className={`w-[52vw] max-w-[190px] md:w-[calc((100%-4.5rem)/5.25)] md:max-w-none
               flex-none snap-start ${a.foto ? '' : 'self-start'}`}>
             <Revelar atraso={i * 60} className={a.foto ? 'h-full' : ''}>
               <Cartao a={a} />
