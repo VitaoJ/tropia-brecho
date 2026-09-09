@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { listarCategorias } from '../services/api'
+import BarraFreteGratis from './BarraFreteGratis'
 import logoSimbolo from '../assets/logo-simbolo.svg'
 import logoTexto from '../assets/logo-texto.svg'
 
@@ -117,7 +118,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-[#eae1d4] border-b border-[#d6c8b3]">
+      <nav className="sticky top-0 z-50 bg-[#eae1d4]">
         {/* ── Celular: menu, marca e carrinho. A busca e os links moram no
              painel, porque seis links não cabem numa barra de 375px. ── */}
         <div className="md:hidden h-16 px-4 flex items-center justify-between gap-3">
@@ -190,6 +191,11 @@ export default function Navbar() {
             </div>
           </div>
         </div>
+
+        {/* Dentro da barra fixa, e não acima dela: assim o quanto falta para
+            o frete grátis continua à vista durante a rolagem, que é quando a
+            pessoa está justamente somando peças. */}
+        <BarraFreteGratis />
       </nav>
 
       {/* ── Painel do celular ── */}
