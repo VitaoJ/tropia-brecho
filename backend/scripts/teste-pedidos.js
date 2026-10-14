@@ -6,13 +6,13 @@
 // Cria pedidos de verdade e apaga tudo no fim (seção 6). Como o .env aponta
 // para o banco de produção, se este script for interrompido no meio ele deixa
 // pedidos de teste no painel — confira antes de sair.
-import jwt from 'jsonwebtoken'
+import { tokenDeTeste } from './tokenDeTeste.js'
 import dotenv from 'dotenv'
 import { randomUUID } from 'crypto'
 dotenv.config()
 
 const API = 'http://localhost:3001/api'
-const token = jwt.sign({ id: 'teste', email: 'teste@tropia' }, process.env.JWT_SECRET, { expiresIn: '1h' })
+const token = await tokenDeTeste()
 const admin = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
 const json = { 'Content-Type': 'application/json' }
 

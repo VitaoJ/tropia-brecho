@@ -7,7 +7,7 @@ import logoTexto from '../../assets/logo-texto.svg'
 
 export default function AdminLogin() {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { login, expirou } = useAuth()
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState(null)
@@ -53,6 +53,12 @@ export default function AdminLogin() {
               autoComplete="current-password"
               className="h-11 px-3 bg-[#eae1d4] border border-[#d6c8b3] rounded-sm text-sm text-[#250000] outline-none focus:border-[#654a2b]" />
           </label>
+
+          {expirou && !erro && (
+            <p className="text-xs text-[#654a2b] bg-[#eae1d4] px-3 py-2 rounded-sm">
+              Sua sessão expirou. Entre de novo para continuar.
+            </p>
+          )}
 
           {erro && (
             <p className="text-xs text-[#c44b00] bg-[#ffe0cc] px-3 py-2 rounded-sm">{erro}</p>

@@ -20,7 +20,14 @@
 
 ### Importante
 
-- [ ] **JWT do admin com 7 dias de validade.** Token roubado vale a semana.
+- [x] **JWT do admin com 7 dias de validade.** Token roubado vale a semana.
+  *Corrigido em 13/10/2026, e era pior que isto:* o servidor só conferia a
+  assinatura, nunca o banco. Um token assinado para um admin inexistente lia
+  os pedidos com CPF e endereço, e nem trocar a senha nem apagar o admin
+  revogava nada. Agora: validade de 24h, admin conferido no banco a cada
+  requisição, versão do token (migration 010) que a troca de senha sobe, e
+  algoritmo fixo em HS256 (o antigo aceitava HS512). `npm run teste:auth`
+  cobre 18 casos; contra o middleware antigo, 8 deles falham.
 - [ ] **Validação sem schema.** A validação é escrita à mão rota a rota, e
   funciona, mas Zod deixaria a regra num lugar só e menos sujeita a esquecimento.
 - [ ] **`npm audit`:** 5 moderadas no backend, 2 no frontend (react-router,
@@ -67,7 +74,7 @@ Cada item tem o **porquê** e o **como verificar** — o objetivo é conseguir c
 
 - [x] **`[C]` Senhas com hash (bcrypt ou argon2), nunca em texto puro nem com hash simples tipo MD5/SHA.**
 - [x] **`[C]` JWT secret é uma string aleatória longa**, não `"secret"`, não o nome do projeto.
-- [ ] **`[I]` Expiração de token compatível com o risco.** *Vindo do planejamento do Tropia:* o admin está com JWT de 7 dias. Para um painel que edita estoque e vê pedidos, isso é bastante — um token roubado vale a semana inteira. Considere 24h, ou access token curto + refresh token.
+- [x] **`[I]` Expiração de token compatível com o risco.** *Vindo do planejamento do Tropia:* o admin está com JWT de 7 dias. Para um painel que edita estoque e vê pedidos, isso é bastante — um token roubado vale a semana inteira. Considere 24h, ou access token curto + refresh token.
 - [x] **`[I]` Rate limit no login.** Sem isso, um script tenta senha ilimitadamente. `express-rate-limit` resolve em 5 linhas.
 - [x] **`[B]` Mensagem de erro de login genérica** ("credenciais inválidas"), não "usuário não existe" — isso entrega quais e-mails estão cadastrados.
 

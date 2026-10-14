@@ -3,6 +3,8 @@
 // Em produção, VITE_API_URL aponta para o backend no Railway
 const BASE = import.meta.env.VITE_API_URL ?? ''
 
+export const SESSAO_EXPIRADA = 'tropia:sessao-expirada'
+
 async function req(path, { method = 'GET', body, token } = {}) {
   const headers = {}
   if (body) headers['Content-Type'] = 'application/json'
@@ -14,6 +16,10 @@ async function req(path, { method = 'GET', body, token } = {}) {
     body: body ? JSON.stringify(body) : undefined,
   })
   const dados = await res.json().catch(() => ({}))
+  // 401 numa chamada que levou token = a sessão do painel acabou (venceu,
+  // ou a senha foi trocada). O AuthContext ouve e manda para o login; sem
+  // isso cada botão do painel mostraria o erro sozinho, sem saída.
+  if (res.status === 401 && token) window.dispatchEvent(new Event(SESSAO_EXPIRADA))
   if (!res.ok) {
     // O corpo do erro vai junto: o checkout precisa saber *quais* peças
     // caíram (`indisponiveis`) e o carrinho, o total certo (`totais`),

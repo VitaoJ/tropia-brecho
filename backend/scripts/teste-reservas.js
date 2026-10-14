@@ -5,14 +5,14 @@
 //
 // Limpa o que cria no fim. Como o .env aponta para o banco de produção, se for
 // interrompido no meio pode deixar peça reservada — some sozinha em 10 min.
-import jwt from 'jsonwebtoken'
+import { tokenDeTeste } from './tokenDeTeste.js'
 import dotenv from 'dotenv'
 import { randomUUID } from 'crypto'
 import { pool } from '../src/db.js'
 dotenv.config()
 
 const API = 'http://localhost:3001/api'
-const token = jwt.sign({ id: 'teste', email: 'teste@tropia' }, process.env.JWT_SECRET, { expiresIn: '1h' })
+const token = await tokenDeTeste()
 const admin = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
 const json = { 'Content-Type': 'application/json' }
 

@@ -466,7 +466,9 @@ export default function Dashboard() {
   // Guarda de rota: sem token → login; token inválido → login
   useEffect(() => {
     if (!token) { navigate('/admin'); return }
-    verificarSessao(token).catch(sair)
+    // Só 401 derruba a sessão. Um 503 é o banco piscando, não motivo para
+    // jogar a pessoa no login no meio do trabalho.
+    verificarSessao(token).catch(err => { if (err.status === 401) sair() })
     carregar()
   }, [token, navigate, sair, carregar])
 
