@@ -12,7 +12,9 @@ import { prepararFoto, otimizar, publicIdDaUrl } from '../../utils/imagem'
  * Reordena com setas e não arrastando: o painel é usado no celular, onde
  * arrastar disputa com o rolar da página e erra na mão de qualquer um.
  */
-export default function GerenciadorFotos({ fotos, aoMudar, token }) {
+// `titulo` e `chamada` trocam os textos quando o uploader serve a outra
+// coisa que não as fotos de uma peça (a foto de capa de uma coleção).
+export default function GerenciadorFotos({ fotos, aoMudar, token, titulo = 'Fotos', chamada = 'Escolher fotos da peça' }) {
   const [enviando, setEnviando] = useState([])   // { id, nome, progresso, erro }
   const [configurado, setConfigurado] = useState(null)
   const [arrastando, setArrastando] = useState(false)
@@ -95,7 +97,7 @@ export default function GerenciadorFotos({ fotos, aoMudar, token }) {
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-xs text-[#654a2b]">
-          Fotos {fotos.length > 0 && <span className="opacity-70">— a primeira é a capa · ✂ troca o fundo pela cor do site</span>}
+          {titulo} {fotos.length > 0 && <span className="opacity-70">— a primeira é a capa · ✂ troca o fundo pela cor do site</span>}
         </span>
         {fotos.length > 0 && (
           <span className="text-[11px] text-[#654a2b] opacity-70">{fotos.length} foto{fotos.length > 1 ? 's' : ''}</span>
@@ -189,7 +191,7 @@ export default function GerenciadorFotos({ fotos, aoMudar, token }) {
             ${arrastando ? 'border-[#654a2b] bg-[#eae1d4]' : 'border-[#d6c8b3] hover:border-[#654a2b]'}`}
         >
           <p className="text-xs text-[#250000]">
-            {fotos.length ? 'Adicionar mais fotos' : 'Escolher fotos da peça'}
+            {fotos.length ? 'Adicionar mais fotos' : chamada}
           </p>
           <p className="text-[11px] text-[#654a2b] mt-0.5">
             toque para escolher, ou arraste para cá

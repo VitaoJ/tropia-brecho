@@ -22,7 +22,9 @@ const NUMEROS = Array.from({ length: 10 }, (_, i) => String(35 + i))
 
 // Os filtros vivem na URL para que voltar, recarregar e compartilhar
 // mantenham a mesma seleção.
-const CHAVES = ['categoria', 'tamanho', 'genero', 'condicao', 'busca']
+// `tag` e `colecao` chegam por link (a tag na página da peça, o "ver tudo"
+// de uma coleção na home) e não pelo painel de filtros.
+const CHAVES = ['categoria', 'tamanho', 'genero', 'condicao', 'busca', 'tag', 'colecao']
 
 function Chip({ ativo, children, ...props }) {
   return (
@@ -126,6 +128,7 @@ export default function Catalogo() {
   const [categorias, setCategorias] = useState([])
   const [generos, setGeneros] = useState([])
   const [painelAberto, setPainelAberto] = useState(false)
+  const [infoColecao, setInfoColecao] = useState(null)   // { nome, chamada }
 
   const filtros = Object.fromEntries(CHAVES.map(k => [k, params.get(k)]))
   const qtdAtivos = CHAVES.filter(k => filtros[k]).length
@@ -148,7 +151,8 @@ export default function Catalogo() {
     setErro(null)
     try {
       const atuais = Object.fromEntries(CHAVES.map((k, i) => [k, assinatura.split('|')[i] || undefined]))
-      const { produtos } = await listarProdutos({ ...atuais, limite: POR_PAGINA, pagina: pag })
+      const { produtos, colecao } = await listarProdutos({ ...atuais, limite: POR_PAGINA, pagina: pag })
+      setInfoColecao(colecao ?? null)
       const novos = produtos.map(normalizarProduto)
       setPecas(prev => pag === 1 ? novos : [...prev, ...novos])
       setTemMais(produtos.length === POR_PAGINA)
@@ -191,15 +195,38 @@ export default function Catalogo() {
   return (
     <section className={`${CONTAINER} pt-6 md:pt-12 pb-12 md:pb-20`}>
       <div className="flex items-baseline justify-between gap-4 mb-4 md:mb-8">
-        <h1 className="text-2xl md:text-4xl font-medium text-[#250000]">
-          {nomeCategoria ?? 'Catálogo'}
-        </h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl md:text-4xl font-medium text-[#250000]">
+            {(filtros.colecao && infoColecao?.nome) || nomeCategoria || 'Catálogo'}
+          </h1>
+          {filtros.colecao && infoColecao?.chamada && (
+            <p className="text-[13px] md:text-sm text-[#654a2b] mt-1">{infoColecao.chamada}</p>
+          )}
+        </div>
         {!carregando && pecas.length > 0 && (
           <span className="text-xs text-[#654a2b] flex-none">
             {pecas.length} {pecas.length === 1 ? 'peça' : 'peças'}
           </span>
         )}
       </div>
+
+      {/* Coleção e tag não estão no painel de filtros: aparecem aqui, com
+          um X, para a pessoa saber por que está vendo só parte do acervo. */}
+      {(filtros.colecao || filtros.tag) && (
+        <div className="flex flex-wrap gap-2 -mt-1 mb-4 md:mb-6">
+          {[['colecao', 'Coleção', infoColecao?.nome ?? filtros.colecao], ['tag', 'Tag', filtros.tag]]
+            .filter(([chave]) => filtros[chave])
+            .map(([chave, rotulo, valor]) => (
+              <button key={chave} onClick={() => definir(chave, null)}
+                aria-label={`Tirar o filtro ${rotulo.toLowerCase()} ${valor}`}
+                className="inline-flex items-center gap-2 min-h-9 pl-3.5 pr-3 rounded-full bg-[#250000]
+                  text-[#eae1d4] text-xs tracking-[0.06em]">
+                <span><span className="opacity-60">{rotulo}:</span> {valor}</span>
+                <span aria-hidden="true" className="text-base leading-none">×</span>
+              </button>
+            ))}
+        </div>
+      )}
 
       <div className="md:flex md:gap-10 lg:gap-14 md:items-start">
         {/* Desktop: filtros na coluna lateral */}

@@ -34,8 +34,10 @@ async function req(path, { method = 'GET', body, token } = {}) {
 
 const get = (path) => req(path)
 
-export function listarProdutos({ categoria, tamanho, genero, condicao, busca, limite, pagina } = {}) {
+export function listarProdutos({ categoria, tamanho, genero, condicao, busca, tag, colecao, limite, pagina } = {}) {
   const params = new URLSearchParams()
+  if (tag) params.set('tag', tag)
+  if (colecao) params.set('colecao', colecao)
   if (categoria) params.set('categoria', categoria)
   if (tamanho) params.set('tamanho', tamanho)
   if (genero) params.set('genero', genero)
@@ -159,6 +161,39 @@ export function cotarFrete(cep, itens) {
 /* ─── Avaliações ─────────────────────────────────────────────── */
 
 // Só as publicadas — é o que a home mostra.
+// Coleções: a home pública e o painel
+export function obterHome() {
+  return get('/colecoes/home')
+}
+
+export function listarColecoes(token) {
+  return req('/colecoes', { token })
+}
+
+export function criarColecao(dados, token) {
+  return req('/colecoes', { method: 'POST', body: dados, token })
+}
+
+export function atualizarColecao(id, dados, token) {
+  return req(`/colecoes/${id}`, { method: 'PUT', body: dados, token })
+}
+
+export function levarParaCapa(id, token) {
+  return req(`/colecoes/${id}/capa`, { method: 'POST', token })
+}
+
+export function arquivarColecao(id, arquivada, token) {
+  return req(`/colecoes/${id}/arquivar`, { method: 'POST', body: { arquivada }, token })
+}
+
+export function excluirColecao(id, token) {
+  return req(`/colecoes/${id}`, { method: 'DELETE', token })
+}
+
+export function salvarOrdemHome(secoes, token) {
+  return req('/colecoes/home/ordem', { method: 'PUT', body: { secoes }, token })
+}
+
 export function listarAvaliacoes() {
   return get('/avaliacoes')
 }

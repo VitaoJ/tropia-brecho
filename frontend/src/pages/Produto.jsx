@@ -280,7 +280,14 @@ function mapear(p) {
     marca: p.categoria ?? '',
     categoriaSlug: p.categoria_slug ?? null,
     genero: p.gender ?? null,
-    tags: [p.categoria, p.gender, p.size ? `Tam. ${p.size}` : null].filter(Boolean),
+    // Categoria e gênero costumam ter o mesmo nome ("Feminino" e
+    // "feminino"); sem tirar a repetição a peça mostrava os dois.
+    tags: [p.categoria, p.gender, p.size ? `Tam. ${p.size}` : null]
+      .filter(Boolean)
+      .filter((t, i, todas) => todas.findIndex(o => o.toLowerCase() === t.toLowerCase()) === i),
+    // As tags que o Murilo dá à peça no painel. Cada uma leva ao catálogo
+    // com todas as peças que a têm.
+    etiquetas: Array.isArray(p.tags) ? p.tags : [],
     preco: Number(p.price),
     desconto: calcularDesconto(p.price, p.original_price),
     tamanho: p.size ?? null,
@@ -340,11 +347,20 @@ export default function Produto() {
 
         <div className="pt-5 md:pt-0 flex flex-col gap-4 md:gap-6 pb-28 md:pb-0">
           <div>
-            <div className="flex gap-1.5 flex-wrap mb-2">
+            <div className="flex gap-1.5 flex-wrap items-center mb-2">
               {produto.tags.map(t => (
                 <span key={t} className="text-[10px] tracking-[0.14em] text-[#654a2b] border border-[#d6c8b3] px-2 py-0.5 rounded-full capitalize">
                   {t}
                 </span>
+              ))}
+              {produto.etiquetas?.map(t => (
+                <Link key={`tag-${t}`} to={`/catalogo?tag=${encodeURIComponent(t)}`}
+                  /* Maior que as etiquetas ao lado porque esta se toca: 32px
+                     é o mínimo que o dedo acerta sem mirar. */
+                  className="inline-flex items-center min-h-8 text-[11px] tracking-[0.1em] text-[#250000]
+                    bg-[#f2ead9] border border-[#d6c8b3] px-3 rounded-full hover:border-[#250000] transition-colors">
+                  #{t}
+                </Link>
               ))}
             </div>
             <h1 className="text-2xl md:text-4xl font-medium text-[#250000] leading-tight">

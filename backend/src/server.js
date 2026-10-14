@@ -14,6 +14,7 @@ import authRouter       from './routes/auth.js'
 import categoriasRouter from './routes/categorias.js'
 import cuponsRouter     from './routes/cupons.js'
 import relatoriosRouter from './routes/relatorios.js'
+import colecoesRouter from './routes/colecoes.js'
 
 dotenv.config()
 
@@ -81,6 +82,7 @@ app.use('/api/auth',        authRouter)
 app.use('/api/categorias',  categoriasRouter)
 app.use('/api/cupons',      cuponsRouter)
 app.use('/api/relatorios',  relatoriosRouter)
+app.use('/api/colecoes',    colecoesRouter)
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', app: 'Tropia Brechó' }))
 

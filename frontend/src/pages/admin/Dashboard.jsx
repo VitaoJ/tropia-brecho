@@ -14,6 +14,8 @@ import ConfirmarAcao from '@/components/admin/ConfirmarAcao'
 import SecaoPedidos from './SecaoPedidos'
 import SecaoVisaoGeral from './SecaoVisaoGeral'
 import SecaoRelatorios from './SecaoRelatorios'
+import SecaoColecoes from './SecaoColecoes'
+import CampoTags from '@/components/admin/CampoTags'
 import logoSimbolo from '../../assets/logo-simbolo.svg'
 
 const CONDICOES = [
@@ -30,14 +32,14 @@ const rotuloCondicao = (valor) =>
 const FORM_VAZIO = {
   name: '', price: '', original_price: '', category_id: '', size: '',
   gender: 'feminino', condition: 'otimo', description: '', fotos: [],
-  weight_kg: '', width_cm: '', height_cm: '', length_cm: '', sold: false,
+  weight_kg: '', width_cm: '', height_cm: '', length_cm: '', sold: false, tags: [],
 }
 
 const CAMPO = 'h-10 px-3 bg-[#eae1d4] border border-[#d6c8b3] rounded-sm text-sm text-[#250000] outline-none focus:border-[#654a2b] w-full'
 const ROTULO = 'text-xs text-[#654a2b]'
 
 /* ─── Formulário de peça (modal) ─────────────────────────────── */
-function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando, token }) {
+function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando, token, sugestoesTags }) {
   const [form, setForm] = useState(inicial)
   const [percentual, setPercentual] = useState('')
   const campo = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
@@ -78,6 +80,7 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando, token }) 
       height_cm: form.height_cm === '' ? null : Number(form.height_cm),
       length_cm: form.length_cm === '' ? null : Number(form.length_cm),
       sold: form.sold,
+      tags: form.tags,
     })
   }
 
@@ -175,6 +178,9 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando, token }) 
             </span>
           </span>
         </label>
+
+        <CampoTags tags={form.tags} sugestoes={sugestoesTags}
+          aoMudar={(tags) => setForm(f => ({ ...f, tags }))} />
 
         <label className="flex flex-col gap-1">
           <span className={rotulo}>Descrição</span>
@@ -544,6 +550,7 @@ export default function Dashboard() {
       weight_kg: p.weight_kg ?? '', width_cm: p.width_cm ?? '',
       height_cm: p.height_cm ?? '', length_cm: p.length_cm ?? '',
       sold: Boolean(p.sold),
+      tags: p.tags ?? [],
     },
   })
 
@@ -554,6 +561,7 @@ export default function Dashboard() {
     ['pedidos', 'PEDIDOS'],
     ['estoque', 'ESTOQUE'],
     ['cupons', 'CUPONS'],
+    ['colecoes', 'COLEÇÕES'],
     ['avaliacoes', 'AVALIAÇÕES'],
     ['relatorios', 'RELATÓRIOS'],
   ]
@@ -565,14 +573,19 @@ export default function Dashboard() {
         sticky top-0 z-40 items-center md:items-stretch justify-between md:justify-start px-4 md:px-0 h-14 md:h-auto">
         <div className="flex-none flex items-center gap-3 md:px-5 md:h-16 md:border-b border-[#432d1c]">
           <img src={logoSimbolo} alt="Tropia" className="h-7 w-7 md:h-8 md:w-8 object-contain invert" />
-          <span className="text-sm tracking-[0.2em]">TROPIA</span>
+          {/* No celular só o símbolo: o nome tomava a largura das abas. */}
+          <span className="hidden md:inline text-sm tracking-[0.2em]">TROPIA</span>
         </div>
 
         {/* Seções: abas no mobile, lista no desktop */}
         {/* Seis seções não cabem numa barra de 375px: no celular a lista
             rola na horizontal em vez de espremer e subir por cima da marca. */}
+        {/* O esmaecido nas pontas avisa que a lista continua, em vez de
+            cortar uma palavra seca colada no logo ou no SAIR. */}
         <nav className="flex md:flex-col md:py-4 text-xs tracking-[0.1em] md:flex-1 gap-1 md:gap-0
-          min-w-0 overflow-x-auto md:overflow-visible escondeBarra">
+          min-w-0 mx-2 md:mx-0 px-2 md:px-0 overflow-x-auto md:overflow-visible escondeBarra
+          [mask-image:linear-gradient(to_right,transparent,black_10px,black_calc(100%-10px),transparent)]
+          md:[mask-image:none]">
           {SECOES.map(([id, label]) => (
             <button key={id} onClick={() => setSecao(id)}
               className={`flex-none whitespace-nowrap px-3 md:px-5 py-1.5 md:py-3 text-left rounded-sm md:rounded-none md:border-l-2 ${
@@ -599,6 +612,7 @@ export default function Dashboard() {
          : secao === 'pedidos' ? <SecaoPedidos token={token} onErro={setErro} />
          : secao === 'relatorios' ? <SecaoRelatorios token={token} onErro={setErro} />
          : secao === 'avaliacoes' ? <SecaoAvaliacoes token={token} onErro={setErro} />
+         : secao === 'colecoes' ? <SecaoColecoes token={token} onErro={setErro} />
          : secao === 'cupons' ? <SecaoCupons token={token} onErro={setErro} /> : <>
         <div className="flex items-center justify-between gap-3 mb-5 md:mb-6">
           <div>
@@ -736,6 +750,7 @@ export default function Dashboard() {
 
       {modal && (
         <FormPeca inicial={modal.inicial} categorias={categorias}
+          sugestoesTags={[...new Set(pecas.flatMap(p => p.tags ?? []))].sort()}
           onSalvar={salvar} onFechar={() => setModal(null)} salvando={salvando} token={token} />
       )}
 

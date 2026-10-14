@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { query } from '../db.js'
 import { requireAdmin } from '../middlewares/auth.js'
+import { normalizarTags } from '../utils/texto.js'
 
 const router = Router()
 
@@ -12,13 +13,26 @@ const RESERVADA = '(p.reserved_until IS NOT NULL AND p.reserved_until > NOW())'
 // Filtros via query string: ?categoria=feminino&tamanho=M&genero=feminino&limite=20&pagina=1
 router.get('/', async (req, res) => {
   try {
-    const { categoria, tamanho, genero, condicao, busca } = req.query
+    const { categoria, tamanho, genero, condicao, busca, tag, colecao } = req.query
     const limite = Math.min(parseInt(req.query.limite) || 20, 100)
     const pagina = Math.max(parseInt(req.query.pagina) || 1, 1)
 
     // vendidas=1 inclui peças já vendidas (usado pelo painel admin)
     const filtros = req.query.vendidas === '1' ? ['TRUE'] : ['p.sold = FALSE']
     const valores = []
+
+    // Tag e coleção chegam por link (tag na página da peça, "ver coleção" na
+    // home), não pelo painel de filtros.
+    if (tag) {
+      valores.push(String(tag).trim().toLowerCase())
+      filtros.push(`$${valores.length} = ANY(p.tags)`)
+    }
+    if (colecao) {
+      valores.push(String(colecao))
+      filtros.push(`p.id IN (SELECT cp.product_id FROM collection_products cp
+                               JOIN collections c ON c.id = cp.collection_id
+                              WHERE c.slug = $${valores.length})`)
+    }
 
     if (categoria) {
       valores.push(categoria)
@@ -51,7 +65,7 @@ router.get('/', async (req, res) => {
 
     const { rows } = await query(
       `SELECT p.id, p.name, p.description, p.price, p.original_price, p.size,
-              p.gender, p.condition, p.images, p.sold, p.category_id, p.created_at,
+              p.gender, p.condition, p.images, p.sold, p.tags, p.category_id, p.created_at,
               p.weight_kg, p.width_cm, p.height_cm, p.length_cm,
               ${RESERVADA} AS reservada,
               c.name AS categoria, c.slug AS categoria_slug
@@ -63,7 +77,16 @@ router.get('/', async (req, res) => {
       valores
     )
 
-    res.json({ produtos: rows, pagina, limite })
+    // Filtrando por coleção, o catálogo vira a página dela: vai junto o nome
+    // e a chamada para o título.
+    let infoColecao = null
+    if (colecao) {
+      const { rows: [c] } = await query(
+        'SELECT nome, chamada FROM collections WHERE slug = $1', [String(colecao)])
+      infoColecao = c ?? null
+    }
+
+    res.json({ produtos: rows, pagina, limite, colecao: infoColecao })
   } catch (err) {
     console.error('GET /produtos:', err)
     res.status(500).json({ erro: 'Erro ao buscar produtos' })
@@ -121,7 +144,7 @@ router.get('/:id', async (req, res) => {
 
 const CAMPOS = [
   'name', 'description', 'price', 'original_price',
-  'category_id', 'size', 'gender', 'condition', 'images', 'sold',
+  'category_id', 'size', 'gender', 'condition', 'images', 'sold', 'tags',
   // Usados na cotação de frete; nulos caem no padrão da categoria.
   'weight_kg', 'width_cm', 'height_cm', 'length_cm',
 ]
@@ -139,7 +162,7 @@ function validarDesconto(original_price, price) {
 router.post('/', requireAdmin, async (req, res) => {
   try {
     const { name, description, price, original_price, category_id, size, gender,
-            condition, images, weight_kg, width_cm, height_cm, length_cm } = req.body
+            condition, images, weight_kg, width_cm, height_cm, length_cm, sold, tags } = req.body
     if (!name || !price) {
       return res.status(400).json({ erro: 'Nome e preço são obrigatórios' })
     }
@@ -148,12 +171,14 @@ router.post('/', requireAdmin, async (req, res) => {
 
     const { rows } = await query(
       `INSERT INTO products (name, description, price, original_price, category_id, size,
-                             gender, condition, images, weight_kg, width_cm, height_cm, length_cm)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                             gender, condition, images, weight_kg, width_cm, height_cm, length_cm,
+                             sold, tags)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
        RETURNING *`,
       [name, description ?? null, price, original_price ?? null, category_id ?? null,
        size ?? null, gender ?? null, condition ?? null, images ?? [],
-       weight_kg || null, width_cm || null, height_cm || null, length_cm || null]
+       weight_kg || null, width_cm || null, height_cm || null, length_cm || null,
+       sold === true, normalizarTags(tags)]
     )
     res.status(201).json({ produto: rows[0] })
   } catch (err) {
@@ -181,7 +206,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
     }
 
     const sets = enviados.map((campo, i) => `${campo} = $${i + 1}`)
-    const valores = enviados.map(campo => req.body[campo])
+    const valores = enviados.map(campo => campo === 'tags' ? normalizarTags(req.body.tags) : req.body[campo])
     valores.push(req.params.id)
 
     const { rows } = await query(

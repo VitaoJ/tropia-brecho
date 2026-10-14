@@ -12,6 +12,7 @@
     "teste:pedidos": "node scripts/teste-pedidos.js",
     "teste:reservas": "node scripts/teste-reservas.js",
     "teste:auth": "node scripts/teste-auth.js",
+    "teste:colecoes": "node scripts/teste-colecoes.js",
     "seed:avaliacoes": "node scripts/seed-avaliacoes.js",
     "teste:pagamentos": "node scripts/teste-pagamentos.js"
   },
