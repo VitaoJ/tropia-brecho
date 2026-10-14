@@ -194,6 +194,27 @@ export function salvarOrdemHome(secoes, token) {
   return req('/colecoes/home/ordem', { method: 'PUT', body: { secoes }, token })
 }
 
+// Posts do Instagram na home (painel)
+export function listarInstagram(token) {
+  return req('/instagram', { token })
+}
+
+export function criarPostInstagram(dados, token) {
+  return req('/instagram', { method: 'POST', body: dados, token })
+}
+
+export function atualizarPostInstagram(id, dados, token) {
+  return req(`/instagram/${id}`, { method: 'PUT', body: dados, token })
+}
+
+export function excluirPostInstagram(id, token) {
+  return req(`/instagram/${id}`, { method: 'DELETE', token })
+}
+
+export function ordenarInstagram(ids, token) {
+  return req('/instagram/ordem', { method: 'PUT', body: { ids }, token })
+}
+
 export function listarAvaliacoes() {
   return get('/avaliacoes')
 }

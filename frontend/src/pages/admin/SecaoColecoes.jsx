@@ -7,6 +7,7 @@ import {
 import { otimizar } from '../../utils/imagem'
 import { formatarPreco } from '../../utils/preco'
 import GerenciadorFotos from './GerenciadorFotos'
+import BlocoInstagram from './BlocoInstagram'
 
 const CAMPO = 'h-10 px-3 bg-[#eae1d4] border border-[#d6c8b3] rounded-sm text-sm text-[#250000] outline-none focus:border-[#654a2b] w-full'
 const ROTULO = 'text-xs text-[#654a2b]'
@@ -191,7 +192,8 @@ function OrdemHome({ secoes, colecoes, capa, aoMudar }) {
               <span className="flex-1 min-w-0 flex flex-col">
                 <span className="text-sm text-[#250000] truncate">{nome(s)}</span>
                 <span className="text-[10px] tracking-[0.16em] text-[#654a2b]">
-                  {s.tipo === 'colecao' ? 'COLEÇÃO' : 'AUTOMÁTICA'}{s.visivel ? '' : ' · ESCONDIDA'}
+                  {s.tipo === 'colecao' ? 'COLEÇÃO' : s.tipo === 'instagram' ? 'POSTS ABAIXO' : 'AUTOMÁTICA'}
+                  {s.visivel ? '' : ' · ESCONDIDA'}
                 </span>
               </span>
               <button onClick={() => alternar(i)}
@@ -360,6 +362,8 @@ export default function SecaoColecoes({ token, onErro }) {
           )}
         </div>
       )}
+
+      <BlocoInstagram token={token} onErro={onErro} />
 
       {modal && (
         <Form inicial={modal.inicial} estoque={estoque} token={token}

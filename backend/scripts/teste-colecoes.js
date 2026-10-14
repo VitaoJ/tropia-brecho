@@ -115,9 +115,29 @@ try {
   checar('catálogo acha pela tag, em qualquer caixa', r.corpo.produtos?.some(p => p.id === a.id))
   r = await chamar('GET', `/produtos/${a.id}`, null, {})
   checar('página da peça recebe as tags', r.corpo.produto?.tags?.includes('customizada'))
+
+  // ── 5. instagram ─────────────────────────────────────────────────
+  console.log('\n5. Instagram')
+  checar('post sem imagem não aparece na home', !(await home()).secoes.some(s => s.tipo === 'instagram'))
+  r = await chamar('POST', '/instagram', { url: 'https://www.instagram.com/p/TESTEcol123/?img_index=1' })
+  checar('link do app vira link limpo', r.corpo.post?.url === 'https://www.instagram.com/p/TESTEcol123/', r.corpo.post?.url)
+  const post = r.corpo.post
+  checar('mesmo post, com outro sufixo → 409',
+    (await chamar('POST', '/instagram', { url: 'https://instagram.com/p/TESTEcol123/?igsh=x' })).status === 409)
+  checar('mesmo post, colado sem https → 409',
+    (await chamar('POST', '/instagram', { url: 'instagram.com/p/TESTEcol123' })).status === 409)
+  checar('link que não é post → 400', (await chamar('POST', '/instagram', { url: 'https://example.com/p/x' })).status === 400)
+  checar('imagem do CDN do Instagram → 400',
+    (await chamar('PUT', `/instagram/${post.id}`, { imagem: 'https://scontent.cdninstagram.com/v/x.jpg' })).status === 400)
+  await chamar('PUT', `/instagram/${post.id}`, { imagem: FOTO })
+  h = await home()
+  const ig = h.secoes.find(s => s.tipo === 'instagram')
+  checar('com imagem, aparece na home', ig?.posts.some(p => p.url === post.url))
+  checar('e só os que têm imagem', ig?.posts.every(p => p.imagem))
 } finally {
   // ── limpeza: tudo como estava ──────────────────────────────────────
-  console.log('\n5. Limpeza')
+  console.log('\n6. Limpeza')
+  await pool.query("DELETE FROM instagram_posts WHERE url LIKE '%/TESTEcol%'")
   await pool.query('UPDATE products SET sold = FALSE WHERE id = ANY($1::uuid[])', [[a.id, b.id]])
   await pool.query('UPDATE products SET tags = $1 WHERE id = $2', [a.tags, a.id])
   await pool.query('UPDATE collections SET na_capa = FALSE WHERE na_capa AND id <> $1', [capaOriginal.id])

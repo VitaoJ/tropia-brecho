@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard'
 import Revelar from '../components/Revelar'
 import { otimizar, fontes, MELHOR } from '../utils/imagem'
 import Avaliacoes from '../components/Avaliacoes'
+import { INSTAGRAM, INSTAGRAM_URL } from '../utils/contato'
 
 const CONTAINER = 'max-w-6xl mx-auto px-4 md:px-8'
 
@@ -180,6 +181,60 @@ function FaixaDePecas({ titulo, chamada, pecas, link }) {
   )
 }
 
+/* ─── Instagram ──────────────────────────────────────────────────
+   Os posts são imagens nossas, com o link do post: o embed do Instagram
+   traria o script de rastreamento da Meta e pesaria no celular.
+
+   No celular, uma fila que desliza de lado, com cada post em 3/4 da tela
+   para o texto dos flyers ser legível; três quadrados lado a lado num
+   telefone dariam 120px cada. No desktop, a grade inteira.           */
+function IconeInstagram() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+    </svg>
+  )
+}
+
+function SecaoInstagram({ posts }) {
+  return (
+    <section className="pt-14 md:pt-24 pb-14 md:pb-24">
+      <Revelar>
+        <div className={`${CONTAINER} flex items-baseline justify-between gap-4 mb-6 md:mb-10`}>
+          <h2 className="text-[10px] md:text-xs tracking-[0.32em] text-[#654a2b] uppercase">
+            No Instagram
+          </h2>
+          <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer noopener"
+            className="group flex-none inline-flex items-center gap-2 min-h-11 text-[11px] md:text-xs
+              text-[#654a2b] hover:text-[#250000] transition-colors">
+            <IconeInstagram />
+            @{INSTAGRAM}
+            <span className="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </Revelar>
+
+      <ul className="max-w-6xl mx-auto flex gap-3 overflow-x-auto snap-x snap-mandatory escondeBarra
+        px-4 scroll-px-4 md:px-8 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible">
+        {posts.map((p, i) => (
+          <li key={p.url} className="flex-none w-[75%] snap-start md:w-auto">
+            <a href={p.url} target="_blank" rel="noreferrer noopener"
+              aria-label={`Post ${i + 1} da Tropia no Instagram (abre em outra aba)`}
+              className="group block overflow-hidden rounded-sm bg-[#d6c8b3]" style={{ aspectRatio: '4/5' }}>
+              <img src={otimizar(p.imagem, 600)} srcSet={fontes(p.imagem, [400, 600, 800])}
+                sizes="(min-width: 768px) 33vw, 75vw" alt="" loading="lazy"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
 /* ─── Página ───────────────────────────────────────────────────── */
 
 // Ordem de reserva se a API das coleções falhar: a de antes do painel.
@@ -226,6 +281,7 @@ export default function Home() {
               link={`/catalogo?colecao=${s.slug}`} pecas={s.pecas.map(normalizarProduto)} />
           )
         }
+        if (s.tipo === 'instagram') return <SecaoInstagram key="instagram" posts={s.posts} />
         return null   // seção que esta versão do site ainda não sabe desenhar
       })}
       <Ticker reverse />

@@ -67,19 +67,29 @@ router.get('/home', async (_req, res) => {
       [ids, POR_FAIXA]
     ) : { rows: [] }
 
+    // Posts do Instagram, só os que já têm imagem: sem ela não há o que mostrar.
+    const { rows: posts } = secoes.some(s => s.tipo === 'instagram')
+      ? await query(
+          `SELECT url, imagem FROM instagram_posts
+            WHERE imagem IS NOT NULL ORDER BY posicao, created_at`)
+      : { rows: [] }
+
     res.json({
       capa: capa ? {
         nome: capa.nome, slug: capa.slug, chamada: capa.chamada,
         foto: capa.foto_capa, total: capa.total, destaque,
       } : null,
       secoes: secoes
-        .map(s => s.tipo !== 'colecao' ? { tipo: s.tipo } : {
+        .map(s => s.tipo === 'instagram' ? { tipo: 'instagram', posts }
+          : s.tipo !== 'colecao' ? { tipo: s.tipo } : {
           tipo: 'colecao', nome: s.nome, slug: s.slug, chamada: s.chamada,
           pecas: pecas.filter(p => p.collection_id === s.colecao_id)
             .map(({ collection_id, n, ...p }) => p),
         })
-        // Faixa sem peça disponível não aparece: melhor não ter que ter vazia.
-        .filter(s => s.tipo !== 'colecao' || s.pecas.length > 0),
+        // Faixa sem peça (ou sem post com imagem) não aparece: melhor não
+        // ter que ter vazia.
+        .filter(s => (s.tipo !== 'colecao' || s.pecas.length > 0)
+                  && (s.tipo !== 'instagram' || s.posts.length > 0)),
     })
   } catch (err) {
     console.error('GET /colecoes/home:', err)
