@@ -178,7 +178,8 @@ router.post('/', async (req, res) => {
         cupom?.discount_percent ?? 0,
         dados.forma,
         escolhido,
-        maisBarato
+        maisBarato,
+        cupom?.free_shipping ?? false
       )
 
       // O navegador manda quanto *achava* que ia pagar. Se não bater com a

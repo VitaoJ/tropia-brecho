@@ -43,7 +43,10 @@ export default function Contato() {
         {RECADO_ATENDIMENTO}
       </p>
 
-      <div className="grid gap-3 md:grid-cols-3 mb-4">
+      {/* O e-mail é o valor mais longo e ganha a coluna mais larga: em três
+          terços iguais, "tropia.brecho@gmail.com" não cabia no desktop e o
+          "m" do .com descia sozinho para a linha de baixo. */}
+      <div className="grid gap-3 md:grid-cols-[1fr_1fr_1.45fr] mb-4">
         <Canal rotulo="WhatsApp" valor={TELEFONE_EXIBICAO} href={WHATSAPP_URL} externo />
         <Canal rotulo="Instagram" valor={`@${INSTAGRAM}`} href={INSTAGRAM_URL} externo />
         <Canal rotulo="E-mail" valor={EMAIL} href={`mailto:${EMAIL}`} />

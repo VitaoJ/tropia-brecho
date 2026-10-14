@@ -15,7 +15,8 @@ router.post('/validar', async (req, res) => {
     const erro = motivoInvalido(rows[0])
     if (erro) return res.status(404).json({ erro })
 
-    res.json({ cupom: { code: rows[0].code, discount_percent: rows[0].discount_percent } })
+    const { code: codigo, discount_percent, free_shipping } = rows[0]
+    res.json({ cupom: { code: codigo, discount_percent, free_shipping } })
   } catch (err) {
     console.error('POST /cupons/validar:', err)
     res.status(500).json({ erro: 'Erro ao validar cupom' })
@@ -37,17 +38,22 @@ router.get('/', requireAdmin, async (_req, res) => {
 router.post('/', requireAdmin, async (req, res) => {
   try {
     const code = normalizar(req.body.code)
-    const desconto = Number(req.body.discount_percent)
+    // Vazio é 0: um cupom só de frete grátis não tem porcentagem.
+    const desconto = Number(req.body.discount_percent || 0)
+    const freteGratis = req.body.free_shipping === true
 
     if (!code) return res.status(400).json({ erro: 'Informe o código do cupom' })
-    if (!Number.isInteger(desconto) || desconto < 1 || desconto > 90) {
-      return res.status(400).json({ erro: 'O desconto deve ser um número inteiro entre 1 e 90' })
+    if (!Number.isInteger(desconto) || desconto < 0 || desconto > 90) {
+      return res.status(400).json({ erro: 'O desconto deve ser um número inteiro entre 0 e 90' })
+    }
+    if (desconto === 0 && !freteGratis) {
+      return res.status(400).json({ erro: 'O cupom precisa dar desconto, frete grátis ou os dois' })
     }
 
     const { rows } = await query(
-      `INSERT INTO coupons (code, discount_percent, valid_until, max_uses)
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [code, desconto, req.body.valid_until || null, req.body.max_uses || null]
+      `INSERT INTO coupons (code, discount_percent, free_shipping, valid_until, max_uses)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [code, desconto, freteGratis, req.body.valid_until || null, req.body.max_uses || null]
     )
     res.status(201).json({ cupom: rows[0] })
   } catch (err) {
@@ -62,7 +68,7 @@ router.post('/', requireAdmin, async (req, res) => {
 // PUT /api/cupons/:id — editar / ativar / desativar (admin)
 router.put('/:id', requireAdmin, async (req, res) => {
   try {
-    const campos = ['discount_percent', 'active', 'valid_until', 'max_uses']
+    const campos = ['discount_percent', 'free_shipping', 'active', 'valid_until', 'max_uses']
     const enviados = campos.filter(c => c in req.body)
     if (enviados.length === 0) {
       return res.status(400).json({ erro: 'Nenhum campo para atualizar' })

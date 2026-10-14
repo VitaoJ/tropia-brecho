@@ -6,7 +6,7 @@ import {
   atualizarProduto, excluirProduto, verificarSessao,
   listarCupons, criarCupom, atualizarCupom, excluirCupom,
 } from '../../services/api'
-import { formatarPreco, calcularDesconto } from '../../utils/preco'
+import { formatarPreco, calcularDesconto, descreverCupom } from '../../utils/preco'
 import { otimizar } from '../../utils/imagem'
 import GerenciadorFotos from './GerenciadorFotos'
 import SecaoAvaliacoes from './SecaoAvaliacoes'
@@ -30,7 +30,7 @@ const rotuloCondicao = (valor) =>
 const FORM_VAZIO = {
   name: '', price: '', original_price: '', category_id: '', size: '',
   gender: 'feminino', condition: 'otimo', description: '', fotos: [],
-  weight_kg: '', width_cm: '', height_cm: '', length_cm: '',
+  weight_kg: '', width_cm: '', height_cm: '', length_cm: '', sold: false,
 }
 
 const CAMPO = 'h-10 px-3 bg-[#eae1d4] border border-[#d6c8b3] rounded-sm text-sm text-[#250000] outline-none focus:border-[#654a2b] w-full'
@@ -77,6 +77,7 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando, token }) 
       width_cm:  form.width_cm  === '' ? null : Number(form.width_cm),
       height_cm: form.height_cm === '' ? null : Number(form.height_cm),
       length_cm: form.length_cm === '' ? null : Number(form.length_cm),
+      sold: form.sold,
     })
   }
 
@@ -160,6 +161,21 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando, token }) 
           </label>
         </div>
 
+        {/* Vendida não é condição: uma peça vendida continua "Ótimo" ou "Bom",
+            e a página dela segue no ar para as avaliações apontarem. É o mesmo
+            selo VENDIDA/DISPONÍVEL da lista, aqui onde se edita a peça. */}
+        <label className="flex items-start gap-3 min-h-11 py-1 cursor-pointer">
+          <input type="checkbox" checked={form.sold}
+            onChange={(e) => setForm(f => ({ ...f, sold: e.target.checked }))}
+            className="mt-0.5 w-5 h-5 flex-none accent-[#250000]" />
+          <span className="flex flex-col">
+            <span className="text-sm text-[#250000]">Peça vendida</span>
+            <span className={rotulo}>
+              Sai do catálogo. A página continua no ar, sem preço, com "Peça indisponível".
+            </span>
+          </span>
+        </label>
+
         <label className="flex flex-col gap-1">
           <span className={rotulo}>Descrição</span>
           <textarea className={`${input} h-24 py-2`} value={form.description} onChange={campo('description')} />
@@ -204,7 +220,7 @@ function FormPeca({ inicial, categorias, onSalvar, onFechar, salvando, token }) 
 }
 
 /* ─── Cupons ─────────────────────────────────────────────────── */
-const CUPOM_VAZIO = { code: '', discount_percent: '', valid_until: '', max_uses: '' }
+const CUPOM_VAZIO = { code: '', discount_percent: '', free_shipping: false, valid_until: '', max_uses: '' }
 
 function FormCupom({ onSalvar, onFechar, salvando }) {
   const [form, setForm] = useState(CUPOM_VAZIO)
@@ -214,7 +230,8 @@ function FormCupom({ onSalvar, onFechar, salvando }) {
     e.preventDefault()
     onSalvar({
       code: form.code,
-      discount_percent: Number(form.discount_percent),
+      discount_percent: Number(form.discount_percent || 0),
+      free_shipping: form.free_shipping,
       valid_until: form.valid_until || null,
       max_uses: form.max_uses ? Number(form.max_uses) : null,
     })
@@ -235,10 +252,25 @@ function FormCupom({ onSalvar, onFechar, salvando }) {
             placeholder="VERAO20" required />
         </label>
 
+        {/* Desconto, frete grátis ou os dois. O desconto só é obrigatório
+            quando o cupom não dá frete grátis — senão não daria nada. */}
         <label className="flex flex-col gap-1">
-          <span className={ROTULO}>Desconto (%) *</span>
-          <input className={CAMPO} type="number" min="1" max="90" value={form.discount_percent}
-            onChange={campo('discount_percent')} required />
+          <span className={ROTULO}>Desconto (%){form.free_shipping ? '' : ' *'}</span>
+          <input className={CAMPO} type="number" min={form.free_shipping ? 0 : 1} max="90"
+            value={form.discount_percent} onChange={campo('discount_percent')}
+            placeholder={form.free_shipping ? 'opcional' : ''} required={!form.free_shipping} />
+        </label>
+
+        <label className="flex items-start gap-3 min-h-11 py-1 cursor-pointer">
+          <input type="checkbox" checked={form.free_shipping}
+            onChange={(e) => setForm(f => ({ ...f, free_shipping: e.target.checked }))}
+            className="mt-0.5 w-5 h-5 flex-none accent-[#250000]" />
+          <span className="flex flex-col">
+            <span className="text-sm text-[#250000]">Frete grátis</span>
+            <span className={ROTULO}>
+              A loja paga a entrega mais barata. Se o cliente escolher uma mais rápida, paga só a diferença.
+            </span>
+          </span>
         </label>
 
         <div className="grid grid-cols-2 gap-3">
@@ -350,7 +382,7 @@ function SecaoCupons({ token, onErro }) {
                 <div>
                   <p className="font-medium tracking-[0.08em] text-[#250000]">{c.code}</p>
                   <p className="text-xs text-[#654a2b] mt-0.5">
-                    {c.discount_percent}% · {c.uses}{c.max_uses != null ? ` de ${c.max_uses}` : ''} uso(s)
+                    {descreverCupom(c)} · {c.uses}{c.max_uses != null ? ` de ${c.max_uses}` : ''} uso(s)
                   </p>
                 </div>
                 <span className={`text-[10px] tracking-[0.1em] px-2 py-1 rounded-full flex-none ${c.active ? 'bg-[#d8f3dc] text-[#2d6a4f]' : 'bg-[#d6c8b3] text-[#654a2b]'}`}>
@@ -377,7 +409,7 @@ function SecaoCupons({ token, onErro }) {
             <thead>
               <tr className="bg-[#ddcfb9] text-left text-xs text-[#654a2b]">
                 <th className="px-4 py-3 font-medium">Código</th>
-                <th className="px-4 py-3 font-medium">Desconto</th>
+                <th className="px-4 py-3 font-medium">Benefício</th>
                 <th className="px-4 py-3 font-medium">Usos</th>
                 <th className="px-4 py-3 font-medium">Validade</th>
                 <th className="px-4 py-3 font-medium">Status</th>
@@ -388,7 +420,7 @@ function SecaoCupons({ token, onErro }) {
               {cupons.map((c, i) => (
                 <tr key={c.id} className={i % 2 === 0 ? 'bg-[#f2ead9]' : 'bg-[#eae1d4]'}>
                   <td className="px-4 py-3 font-medium tracking-[0.08em]">{c.code}</td>
-                  <td className="px-4 py-3">{c.discount_percent}%</td>
+                  <td className="px-4 py-3">{descreverCupom(c)}</td>
                   <td className="px-4 py-3 text-xs">
                     {c.uses}{c.max_uses != null ? ` de ${c.max_uses}` : ''}
                   </td>
@@ -511,6 +543,7 @@ export default function Dashboard() {
       description: p.description ?? '', fotos: p.images ?? [],
       weight_kg: p.weight_kg ?? '', width_cm: p.width_cm ?? '',
       height_cm: p.height_cm ?? '', length_cm: p.length_cm ?? '',
+      sold: Boolean(p.sold),
     },
   })
 

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { validarCupom, listarProdutos } from '../services/api'
 import {
-  formatarPreco, normalizarProduto,
+  formatarPreco, normalizarProduto, descreverCupom,
   FRETE_GRATIS_ACIMA_DE, DESCONTO_PIX,
 } from '../utils/preco'
 import ProductCard from '../components/ProductCard'
@@ -12,10 +12,10 @@ import { otimizar } from '../utils/imagem'
 const CONTAINER = 'max-w-6xl mx-auto px-4 md:px-8'
 
 /* ─── Progresso do frete grátis ──────────────────────────────── */
-function BarraFrete({ valor }) {
-  const falta = FRETE_GRATIS_ACIMA_DE - valor
+function BarraFrete({ valor, gratis = false }) {
+  const falta = gratis ? 0 : FRETE_GRATIS_ACIMA_DE - valor
   const atingiu = falta <= 0
-  const progresso = Math.min((valor / FRETE_GRATIS_ACIMA_DE) * 100, 100)
+  const progresso = gratis ? 100 : Math.min((valor / FRETE_GRATIS_ACIMA_DE) * 100, 100)
 
   return (
     <div className={`rounded-sm p-3 ${atingiu ? 'bg-[#d8f3dc]' : 'bg-[#f2ead9] border border-[#d6c8b3]'}`}>
@@ -59,7 +59,7 @@ function CampoCupom() {
     return (
       <div className="flex items-center justify-between gap-3 bg-[#d8f3dc] rounded-sm px-3 py-2.5">
         <span className="text-xs text-[#2d6a4f]">
-          Cupom <strong className="font-medium tracking-[0.06em]">{cupom.code}</strong> — {cupom.discount_percent}% de desconto
+          Cupom <strong className="font-medium tracking-[0.06em]">{cupom.code}</strong> — {descreverCupom(cupom)}
         </span>
         <button onClick={() => setCupom(null)}
           className="text-xs text-[#654a2b] underline underline-offset-2 flex-none">
@@ -130,7 +130,7 @@ export default function Carrinho() {
   const navigate = useNavigate()
   const {
     itens, remover, cupom, quantidade,
-    subtotal, descontoCupom, frete, totalCartao, totalPix, economiaPix,
+    subtotal, descontoCupom, freteGratis, frete, totalCartao, totalPix, economiaPix,
   } = useCart()
 
   if (quantidade === 0) {
@@ -202,12 +202,12 @@ export default function Carrinho() {
 
         {/* Resumo */}
         <aside className="md:w-80 flex-none mt-8 md:mt-0 md:sticky md:top-24 flex flex-col gap-4">
-          <BarraFrete valor={subtotal - descontoCupom} />
+          <BarraFrete valor={subtotal - descontoCupom} gratis={freteGratis} />
           <CampoCupom />
 
           <div className="border border-[#d6c8b3] rounded-sm p-4 bg-[#f2ead9] flex flex-col gap-2.5">
             {linha('Subtotal', formatarPreco(subtotal))}
-            {cupom && linha(`Cupom ${cupom.code}`, `− ${formatarPreco(descontoCupom)}`, true)}
+            {cupom && descontoCupom > 0 && linha(`Cupom ${cupom.code}`, `− ${formatarPreco(descontoCupom)}`, true)}
             {linha('Frete', frete === 0 ? 'Grátis' : formatarPreco(frete))}
 
             <div className="border-t border-[#d6c8b3] my-1" />

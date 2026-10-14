@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { listarProdutos } from '../services/api'
-import { normalizarProduto, formatarPreco } from '../utils/preco'
+import { normalizarProduto } from '../utils/preco'
 import ProductCard from '../components/ProductCard'
 import Revelar from '../components/Revelar'
 import { otimizar, fontes, MELHOR } from '../utils/imagem'
@@ -15,9 +15,12 @@ function Ticker({ reverse = false, dark = false }) {
     ? 'MODA CIRCULAR — SUSTENTABILIDADE — PEÇAS DE SEGUNDA MÃO — UPCYCLING — PEÇAS ÚNICAS — CUSTOMIZAÇÃO — '
     : 'FRETE PARA TODO BRASIL — PEÇAS SELECIONADAS — MODA CONSCIENTE — VINTAGE & CLÁSSICO — '
   return (
+    // A escura voltou ao #250000 depois de passar pelo verde #01530b: o
+    // Murilo pediu o verde, viu no ar e preferiu a cor de antes, que é a do
+    // rodapé e a do botão de comprar.
     <div className={`overflow-hidden py-2 md:py-2.5 border-y ${
       dark
-        ? 'bg-[#01530b] text-[#eae1d4] border-[#01530b]'
+        ? 'bg-[#250000] text-[#eae1d4] border-[#250000]'
         : 'bg-transparent text-[#654a2b] border-[#d6c8b3]'
     }`}>
       {/* w-max é o que faz o laço fechar: sem ele a div fica com a largura da
@@ -96,8 +99,10 @@ function Hero({ pecas, total }) {
             </Link>
           </div>
 
-          {/* Seção em destaque */}
-          <div className="md:col-span-5 mt-8 md:mt-0 relative z-10 flex md:justify-end">
+          {/* Seção em destaque. Só a partir do tablet: no celular o cartão
+              cobria metade da foto, e sem ele o texto desce para o pé da
+              capa, por cima da foto. A seção continua no menu. */}
+          <div className="hidden md:col-span-5 relative z-10 md:flex md:justify-end">
             <Link to={`/catalogo?genero=${DESTAQUE.genero}`}
               className="surgir group block w-full max-w-[300px]" style={{ animationDelay: '460ms' }}>
               {fotoDaSecao && (
@@ -124,38 +129,6 @@ function Hero({ pecas, total }) {
           </div>
 
         </div>
-      </div>
-    </section>
-  )
-}
-
-/* ─── Manifesto ──────────────────────────────────────────────── */
-function Manifesto() {
-  return (
-    <section className="mt-14 md:mt-24 bg-[#432d1c] text-[#eae1d4] grao relative overflow-hidden">
-      <div className={`${CONTAINER} py-14 md:py-24`}>
-        <Revelar>
-          <p className="font-black italic tracking-[-0.045em] leading-[0.95] max-w-3xl"
-            style={{ fontSize: 'clamp(1.75rem, 5.5vw, 3.75rem)' }}>
-            Toda peça daqui já teve
-            uma história. <span className="text-[#ffc509]">A próxima é a sua.</span>
-          </p>
-        </Revelar>
-        <Revelar atraso={140}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mt-10 md:mt-16 pt-8 border-t border-[#eae1d4]/15">
-            {[
-              ['Curadoria', 'Cada peça é escolhida e revisada à mão'],
-              ['Peça única', 'Uma unidade de cada — sem reposição'],
-              ['Moda circular', 'Roupa que volta a circular em vez de virar lixo'],
-              ['Brasil inteiro', 'Frete para todo o país'],
-            ].map(([titulo, nota]) => (
-              <div key={titulo}>
-                <h3 className="text-[10px] tracking-[0.24em] text-[#ffc509] uppercase mb-2">{titulo}</h3>
-                <p className="text-xs md:text-sm opacity-60 leading-relaxed">{nota}</p>
-              </div>
-            ))}
-          </div>
-        </Revelar>
       </div>
     </section>
   )
@@ -221,7 +194,6 @@ export default function Home() {
       <Ticker dark />
       <Avaliacoes />
       <Destaques pecas={pecas} />
-      <Manifesto />
       <Ticker reverse />
     </>
   )

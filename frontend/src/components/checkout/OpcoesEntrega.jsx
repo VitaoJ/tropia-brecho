@@ -8,7 +8,7 @@ import { formatarPreco, FRETE_GRATIS_ACIMA_DE, calcularFrete } from '../../utils
  * e sobra só a diferença. Mostrar o preço cheio e descontar depois faria a
  * pessoa escolher com um número e pagar outro.
  */
-export default function OpcoesEntrega({ opcoes, escolhida, aoEscolher, carregando, erro, estimado, valorDoPedido }) {
+export default function OpcoesEntrega({ opcoes, escolhida, aoEscolher, carregando, erro, estimado, valorDoPedido, freteGratis = false }) {
   if (carregando) {
     return <p className="text-[13px] text-[#654a2b]">Calculando o frete para o seu CEP...</p>
   }
@@ -22,7 +22,7 @@ export default function OpcoesEntrega({ opcoes, escolhida, aoEscolher, carregand
   if (!opcoes?.length) return null
 
   const maisBarata = opcoes[0].preco   // a API devolve ordenado por preço
-  const temGratis = valorDoPedido >= FRETE_GRATIS_ACIMA_DE
+  const temGratis = freteGratis || valorDoPedido >= FRETE_GRATIS_ACIMA_DE
 
   return (
     <fieldset className="flex flex-col gap-2">
@@ -31,7 +31,7 @@ export default function OpcoesEntrega({ opcoes, escolhida, aoEscolher, carregand
       </legend>
 
       {opcoes.map(o => {
-        const paga = calcularFrete(valorDoPedido, o.preco, maisBarata)
+        const paga = calcularFrete(valorDoPedido, o.preco, maisBarata, freteGratis)
         const ativa = escolhida?.id === o.id
         return (
           <label key={o.id}
@@ -76,8 +76,8 @@ export default function OpcoesEntrega({ opcoes, escolhida, aoEscolher, carregand
 
       {temGratis && (
         <p className="text-[11px] text-[#2d6a4f] leading-relaxed">
-          Seu pedido passou de {formatarPreco(FRETE_GRATIS_ACIMA_DE)}: cobrimos o
-          valor da entrega mais barata. Nas outras, você paga só a diferença.
+          {freteGratis ? 'Seu cupom dá frete grátis' : `Seu pedido passou de ${formatarPreco(FRETE_GRATIS_ACIMA_DE)}`}: cobrimos
+          o valor da entrega mais barata. Nas outras, você paga só a diferença.
         </p>
       )}
 

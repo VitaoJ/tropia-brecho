@@ -13,11 +13,12 @@ import { formatarPreco, FRETE_GRATIS_ACIMA_DE } from '../utils/preco'
  * barra em zero não convence ninguém.
  */
 export default function BarraFreteGratis() {
-  const { subtotal, descontoCupom, quantidade } = useCart()
+  const { subtotal, descontoCupom, quantidade, freteGratis } = useCart()
   const valor = subtotal - descontoCupom   // mesma base que decide o frete
 
-  const falta = FRETE_GRATIS_ACIMA_DE - valor
-  const progresso = Math.min((valor / FRETE_GRATIS_ACIMA_DE) * 100, 100)
+  // Cupom de frete grátis já cumpre a meta, seja qual for o valor.
+  const falta = freteGratis ? 0 : FRETE_GRATIS_ACIMA_DE - valor
+  const progresso = freteGratis ? 100 : Math.min((valor / FRETE_GRATIS_ACIMA_DE) * 100, 100)
 
   return (
     <div className="bg-[#250000] text-[#eae1d4]">

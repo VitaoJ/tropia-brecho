@@ -91,7 +91,7 @@ function Resumo({ itens, cupom, subtotal, descontoCupom, frete, total, forma, ec
           <span className="text-[#654a2b]">Subtotal</span>
           <span className="text-[#250000]">{formatarPreco(subtotal)}</span>
         </div>
-        {cupom && (
+        {cupom && descontoCupom > 0 && (
           <div className="flex justify-between text-[#2d6a4f]">
             <span>Cupom {cupom.code}</span>
             <span>− {formatarPreco(descontoCupom)}</span>
@@ -156,7 +156,7 @@ export default function Checkout() {
   const navigate = useNavigate()
   const {
     itens, cupom, quantidade, remover, limpar,
-    subtotal, descontoCupom, frete, totalCartao, totalPix, economiaPix,
+    subtotal, descontoCupom, freteGratis, frete, totalCartao, totalPix, economiaPix,
   } = useCart()
 
   const reserva = useReserva(itens)
@@ -192,7 +192,7 @@ export default function Checkout() {
   // frete grátis. Sem cotação ainda, cai no valor antigo do contexto.
   const maisBarata = entrega.opcoes[0]?.preco ?? null
   const freteEscolhido = entrega.escolhida
-    ? calcularFrete(subtotal - descontoCupom, entrega.escolhida.preco, maisBarata)
+    ? calcularFrete(subtotal - descontoCupom, entrega.escolhida.preco, maisBarata, freteGratis)
     : frete
   const totalBase = forma === 'pix' ? totalPix - frete : totalCartao - frete
   const total = totalBase + freteEscolhido
@@ -406,7 +406,8 @@ export default function Checkout() {
                   aoEscolher={o => setEntrega(e => ({ ...e, escolhida: o }))}
                   carregando={entrega.carregando} erro={entrega.erro}
                   estimado={entrega.estimado}
-                  valorDoPedido={subtotal - descontoCupom} />
+                  valorDoPedido={subtotal - descontoCupom}
+                  freteGratis={freteGratis} />
               </div>
 
               <p className="text-[11px] text-[#654a2b] leading-relaxed">

@@ -13,6 +13,13 @@ const CONDICOES = [
   { valor: 'regular', label: 'Regular' },
 ]
 
+// Tamanhos fixos, na ordem de vestir. Eles vinham do estoque em ordem
+// alfabética (40, G, GG, M, P) e mudavam a cada peça cadastrada. Tamanho sem
+// peça continua clicável e cai no "Nenhuma peça encontrada".
+const LETRAS = ['PP', 'P', 'M', 'G', 'GG']
+// Numeração de calça, short e calçado.
+const NUMEROS = Array.from({ length: 10 }, (_, i) => String(35 + i))
+
 // Os filtros vivem na URL para que voltar, recarregar e compartilhar
 // mantenham a mesma seleção.
 const CHAVES = ['categoria', 'tamanho', 'genero', 'condicao', 'busca']
@@ -47,16 +54,49 @@ function GrupoFiltro({ titulo, opcoes, selecionado, aoSelecionar }) {
   )
 }
 
-function PainelFiltros({ categorias, tamanhos, generos, filtros, definir, limpar, qtdAtivos }) {
+/* Letras sempre à vista; numeração recolhida, porque são dez opções e a
+   maior parte do acervo é P–GG. Abre sozinha se o tamanho escolhido for um
+   número, senão a seleção ficaria escondida. */
+function GrupoTamanho({ selecionado, aoSelecionar }) {
+  const numeroAtivo = NUMEROS.includes(selecionado)
+  const [aberto, setAberto] = useState(numeroAtivo)
+  useEffect(() => { if (numeroAtivo) setAberto(true) }, [numeroAtivo])
+
+  const chip = (t) => (
+    <Chip key={t} ativo={selecionado === t}
+      onClick={() => aoSelecionar(selecionado === t ? null : t)}>
+      {t}
+    </Chip>
+  )
+
+  return (
+    <div className="mb-6">
+      <h3 className="text-[11px] tracking-[0.18em] text-[#654a2b] uppercase mb-2.5">Tamanho</h3>
+      <div className="flex flex-wrap gap-2">{LETRAS.map(chip)}</div>
+
+      <button type="button" onClick={() => setAberto(v => !v)} aria-expanded={aberto}
+        className="mt-2 w-full min-h-11 flex items-center justify-between
+          text-[11px] tracking-[0.18em] text-[#654a2b] uppercase hover:text-[#250000]">
+        <span>Numeração{numeroAtivo && !aberto ? ` · ${selecionado}` : ''}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2" strokeLinecap="round" aria-hidden="true"
+          className={`transition-transform duration-200 ${aberto ? 'rotate-180' : ''}`}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      {aberto && <div className="flex flex-wrap gap-2 pt-1">{NUMEROS.map(chip)}</div>}
+    </div>
+  )
+}
+
+function PainelFiltros({ categorias, generos, filtros, definir, limpar, qtdAtivos }) {
   return (
     <>
       <GrupoFiltro titulo="Categoria" selecionado={filtros.categoria}
         aoSelecionar={v => definir('categoria', v)}
         opcoes={categorias.map(c => ({ valor: c.slug, label: c.name }))} />
 
-      <GrupoFiltro titulo="Tamanho" selecionado={filtros.tamanho}
-        aoSelecionar={v => definir('tamanho', v)}
-        opcoes={tamanhos.map(t => ({ valor: t, label: t }))} />
+      <GrupoTamanho selecionado={filtros.tamanho} aoSelecionar={v => definir('tamanho', v)} />
 
       <GrupoFiltro titulo="Gênero" selecionado={filtros.genero}
         aoSelecionar={v => definir('genero', v)}
@@ -84,7 +124,6 @@ export default function Catalogo() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
   const [categorias, setCategorias] = useState([])
-  const [tamanhos, setTamanhos] = useState([])
   const [generos, setGeneros] = useState([])
   const [painelAberto, setPainelAberto] = useState(false)
 
@@ -101,7 +140,7 @@ export default function Catalogo() {
 
   useEffect(() => {
     listarCategorias().then(r => setCategorias(r.categorias)).catch(() => {})
-    listarFiltros().then(r => { setTamanhos(r.tamanhos ?? []); setGeneros(r.generos ?? []) }).catch(() => {})
+    listarFiltros().then(r => setGeneros(r.generos ?? [])).catch(() => {})
   }, [])
 
   const buscar = useCallback(async (pag) => {
@@ -165,7 +204,7 @@ export default function Catalogo() {
       <div className="md:flex md:gap-10 lg:gap-14 md:items-start">
         {/* Desktop: filtros na coluna lateral */}
         <aside className="hidden md:block w-56 flex-none md:sticky md:top-24">
-          <PainelFiltros {...{ categorias, tamanhos, generos, filtros, definir, limpar, qtdAtivos }} />
+          <PainelFiltros {...{ categorias, generos, filtros, definir, limpar, qtdAtivos }} />
         </aside>
 
         <div className="flex-1 min-w-0">
@@ -236,7 +275,7 @@ export default function Catalogo() {
               <button onClick={() => setPainelAberto(false)}
                 className="text-xs tracking-[0.14em] text-[#654a2b]">FECHAR</button>
             </div>
-            <PainelFiltros {...{ categorias, tamanhos, generos, filtros, definir, limpar, qtdAtivos }} />
+            <PainelFiltros {...{ categorias, generos, filtros, definir, limpar, qtdAtivos }} />
             <button onClick={() => setPainelAberto(false)}
               className="w-full h-12 mt-2 bg-[#250000] text-[#eae1d4] text-xs tracking-[0.16em] rounded-sm">
               VER RESULTADOS

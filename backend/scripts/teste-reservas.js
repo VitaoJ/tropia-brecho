@@ -6,6 +6,7 @@
 // Limpa o que cria no fim. Como o .env aponta para o banco de produção, se for
 // interrompido no meio pode deixar peça reservada — some sozinha em 10 min.
 import { tokenDeTeste } from './tokenDeTeste.js'
+import { limparPedidosDeTeste, sobrouDoTeste } from './limparTeste.js'
 import dotenv from 'dotenv'
 import { randomUUID } from 'crypto'
 import { pool } from '../src/db.js'
@@ -121,28 +122,10 @@ console.log('\n8. Limpeza')
 const c = await pool.connect()
 try {
   await c.query('BEGIN')
-  const { rows: cli } = await c.query("SELECT id FROM customers WHERE email LIKE 'teste%@tropia.com'")
-  const ids = cli.map(r => r.id)
-  await c.query('DELETE FROM orders    WHERE customer_id = ANY($1::uuid[])', [ids])
-  await c.query('DELETE FROM addresses WHERE customer_id = ANY($1::uuid[])', [ids])
-  await c.query('DELETE FROM customers WHERE id          = ANY($1::uuid[])', [ids])
-  // Solta toda peça que não esteja num pedido de verdade (pago em diante), e
-  // não só as que este teste usou: execução anterior morta no meio também
-  // deixa peça presa, e ela precisa voltar para a vitrine.
-  await c.query(`UPDATE products SET sold = FALSE, reserved_until = NULL, reserved_by = NULL
-                  WHERE id NOT IN (SELECT oi.product_id FROM order_items oi
-                                     JOIN orders o ON o.id = oi.order_id
-                                    WHERE o.status IN ('paid','shipped','delivered')
-                                      AND oi.product_id IS NOT NULL)`)
+  const tocadas = await limparPedidosDeTeste(c, [a.id, b.id])
   await c.query('COMMIT')
-  // Conta só o que ESTE teste criou. O banco de produção tem pedidos reais,
-  // e a limpeza não deve tocá-los nem falhar por causa deles.
-  const { rows: [n] } = await c.query(`
-    SELECT (SELECT COUNT(*) FROM orders o JOIN customers c ON c.id = o.customer_id
-             WHERE c.email LIKE 'teste%@tropia.com')::int p,
-           (SELECT COUNT(*) FROM products WHERE sold)::int v,
-           (SELECT COUNT(*) FROM products WHERE reserved_until IS NOT NULL)::int r`)
-  checar('nao sobrou nada do teste', n.p === 0 && n.v === 0 && n.r === 0, JSON.stringify(n))
+  const n = await sobrouDoTeste(c, tocadas)
+  checar('nao sobrou nada do teste', n.pedidos === 0 && n.presas === 0, JSON.stringify(n))
 } catch (e) { await c.query('ROLLBACK'); checar('limpeza', false, e.message) }
 finally { c.release(); await pool.end() }
 

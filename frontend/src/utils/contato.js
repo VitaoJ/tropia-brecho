@@ -8,7 +8,7 @@
 
 export const EMAIL = 'tropia.brecho@gmail.com'
 
-export const INSTAGRAM = 'tropia.br'
+export const INSTAGRAM = 'ttropiaa'
 export const INSTAGRAM_URL = `https://instagram.com/${INSTAGRAM}`
 
 // Guardado só com dígitos: o link do WhatsApp exige DDI e DDD colados, e a

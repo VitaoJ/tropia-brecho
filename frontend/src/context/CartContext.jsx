@@ -71,11 +71,13 @@ export function CartProvider({ children }) {
     const subtotal = itens.reduce((s, i) => s + Number(i.preco), 0)
     const descontoCupom = cupom ? subtotal * (cupom.discount_percent / 100) : 0
     const comCupom = subtotal - descontoCupom
-    const frete = itens.length === 0 ? 0 : calcularFrete(comCupom)
+    const freteGratis = Boolean(cupom?.free_shipping)
+    const frete = itens.length === 0 ? 0 : calcularFrete(comCupom, null, null, freteGratis)
 
     return {
       subtotal,
       descontoCupom,
+      freteGratis,
       frete,
       // Cupom e PIX se acumulam: o PIX incide sobre o valor já com cupom.
       totalCartao: comCupom + frete,

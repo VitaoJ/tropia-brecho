@@ -34,14 +34,25 @@ const arredondar = (v) => Math.round(Number(v) * 100) / 100
  * `escolhida` e `maisBarata` são os preços vindos da cotação. Enquanto a
  * cotação não estiver ligada, os dois vêm nulos e vale o frete fixo antigo —
  * assim o site continua funcionando durante a transição.
+ *
+ * `gratis` é o cupom de frete grátis: vale a mesma regra do mínimo, a loja
+ * cobre a opção mais barata, sem precisar chegar ao valor.
  */
-export function calcularFrete(subtotal, escolhida = null, maisBarata = null) {
+export function calcularFrete(subtotal, escolhida = null, maisBarata = null, gratis = false) {
   const temCotacao = escolhida != null && maisBarata != null
   const cheio = temCotacao ? Number(escolhida) : FRETE_FIXO
   const base  = temCotacao ? Number(maisBarata) : FRETE_FIXO
 
-  if (subtotal < FRETE_GRATIS_ACIMA_DE) return arredondar(cheio)
+  if (!gratis && subtotal < FRETE_GRATIS_ACIMA_DE) return arredondar(cheio)
   return arredondar(Math.max(0, cheio - base))
+}
+
+/** O que o cupom dá, em português: "15% de desconto", "frete grátis" ou os dois. */
+export function descreverCupom(cupom) {
+  const partes = []
+  if (cupom?.discount_percent > 0) partes.push(`${cupom.discount_percent}% de desconto`)
+  if (cupom?.free_shipping) partes.push('frete grátis')
+  return partes.join(' + ')
 }
 
 const DIAS_PARA_DEIXAR_DE_SER_NOVO = 14

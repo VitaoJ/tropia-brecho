@@ -40,15 +40,18 @@ function Galeria({ fotos, nome }) {
 
   const ir = (i) => setIdx((i + fotos.length) % fotos.length)
 
-  // Setas do teclado funcionam junto com o swipe e os botões
+  // Setas do teclado funcionam junto com o swipe e os botões. Com a lupa
+  // aberta quem escuta o teclado é ela — se as duas escutassem, cada seta
+  // andaria duas vezes.
   useEffect(() => {
+    if (lupa) return
     const aoTeclar = (e) => {
       if (e.key === 'ArrowLeft') ir(idx - 1)
       if (e.key === 'ArrowRight') ir(idx + 1)
     }
     window.addEventListener('keydown', aoTeclar)
     return () => window.removeEventListener('keydown', aoTeclar)
-  }, [idx, fotos.length])
+  }, [idx, fotos.length, lupa])
 
   const aoTocar = (e) => { inicioX.current = e.touches[0].clientX }
   const aoSoltar = (e) => {
@@ -98,11 +101,6 @@ function Galeria({ fotos, nome }) {
           ))}
         </div>
 
-        {lupa && reais.length > 0 && (
-          <Lupa fotos={reais} indice={Math.max(0, reais.indexOf(fotos[idx]))} nome={nome}
-            aoFechar={() => setLupa(false)} />
-        )}
-
         {fotos.length > 1 && (
           <>
             {/* Setas: sempre visíveis no toque, aparecem no hover do desktop */}
@@ -131,6 +129,21 @@ function Galeria({ fotos, nome }) {
           </>
         )}
       </div>
+
+      {/* Fora da área de swipe: evento de portal sobe pela árvore do React,
+          e um swipe na lupa também arrastava a galeria de trás. */}
+      {lupa && reais.length > 0 && (
+        <Lupa fotos={reais} nome={nome}
+          indice={Math.max(0, reais.indexOf(fotos[idx]))}
+          aoMudar={(alvo) => setIdx(i => {
+            // `alvo` é um índice da lupa, ou uma função do índice atual dela.
+            // A lupa só conhece as fotos reais; a galeria, todas.
+            const atual = Math.max(0, reais.indexOf(fotos[i]))
+            const n = typeof alvo === 'function' ? alvo(atual) : alvo
+            return fotos.indexOf(reais[(n + reais.length) % reais.length])
+          })}
+          aoFechar={() => setLupa(false)} />
+      )}
     </div>
   )
 }
@@ -211,6 +224,20 @@ function BotoesCompra({ produto, fixo }) {
   const favorito = isFavorito(produto.id)
   const noCarrinho = temNoCarrinho(produto.id)
 
+  // Peça vendida continua no ar de propósito: é para onde as avaliações
+  // apontam. Mas ela não se compra — nem preço, nem botão, só o aviso. O
+  // contorno sem preenchimento é para não parecer um botão desabilitado.
+  if (produto.vendida) {
+    return (
+      <div className={fixo ? 'md:hidden fixed bottom-[60px] inset-x-0 z-40 bg-[#eae1d4] border-t border-[#d6c8b3] px-4 py-3 flex gap-3' : 'hidden md:flex'}>
+        <p className="flex-1 h-12 flex items-center justify-center border border-[#250000] rounded-sm
+          text-xs tracking-[0.16em] text-[#250000]">
+          PEÇA INDISPONÍVEL
+        </p>
+      </div>
+    )
+  }
+
   const aoClicar = () => {
     if (noCarrinho) { navigate('/carrinho'); return }
     adicionar({
@@ -261,6 +288,7 @@ function mapear(p) {
     condicao: CONDICAO_LABEL[p.condition] ?? 'Bom',
     descricao: p.description ?? '',
     fotos: p.images?.length ? p.images : CORES_SEM_FOTO,
+    vendida: Boolean(p.sold),
   }
 }
 
@@ -326,7 +354,7 @@ export default function Produto() {
           </div>
 
           <div className="border-t border-[#d6c8b3]" />
-          <Preco preco={produto.preco} desconto={produto.desconto} />
+          {!produto.vendida && <Preco preco={produto.preco} desconto={produto.desconto} />}
 
           {produto.tamanho && (
             <div className="flex items-center gap-3">

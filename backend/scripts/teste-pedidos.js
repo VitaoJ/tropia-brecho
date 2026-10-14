@@ -7,6 +7,8 @@
 // para o banco de produção, se este script for interrompido no meio ele deixa
 // pedidos de teste no painel — confira antes de sair.
 import { tokenDeTeste } from './tokenDeTeste.js'
+import { calcularFrete } from '../src/utils/preco.js'
+import { limparPedidosDeTeste, sobrouDoTeste } from './limparTeste.js'
 import dotenv from 'dotenv'
 import { randomUUID } from 'crypto'
 dotenv.config()
@@ -35,6 +37,7 @@ const precoA = Number(a.price), precoB = Number(b.price)
 console.log(`Peças: "${a.name}" R$${precoA} + "${b.name}" R$${precoB}\n`)
 
 await post('/cupons', { code: 'TESTE20', discount_percent: 20 }, admin)
+await post('/cupons', { code: 'TESTEFRETE', free_shipping: true }, admin)
 
 const cliente = { nome: 'Vitor Freitas', email: `teste${Date.now()}@tropia.com`, cpf: '52998224725', telefone: '11987654321' }
 const endereco = { cep: '01310-100', rua: 'Av Paulista', numero: '1000', bairro: 'Bela Vista', cidade: 'São Paulo', estado: 'SP' }
@@ -89,6 +92,20 @@ checar('cupom aceito em minúsculas', comCupom?.cupom === 'TESTE20')
 checar('cupom e PIX se acumulam', Math.abs(comCupom?.total - totalCupom) < 0.01, `veio ${comCupom?.total}, esperado ${totalCupom}`)
 r = await post('/pedidos', { cliente, endereco, sessao, itens: [a.id], cupom: 'NAOEXISTE' })
 checar('cupom inexistente é recusado', r.status === 400 && r.corpo.campo === 'cupom')
+
+// cupom de frete grátis: a loja cobre a entrega mais barata, e só ela
+console.log('\n2b. Cupom de frete grátis')
+r = await post('/cupons', { code: 'TESTENADA', discount_percent: 0 }, admin)
+checar('cupom sem desconto nem frete grátis é recusado', r.status === 400, JSON.stringify(r.corpo))
+r = await post('/cupons/validar', { code: 'testefrete' })
+checar('validar devolve o frete grátis', r.corpo.cupom?.free_shipping === true && r.corpo.cupom?.discount_percent === 0, JSON.stringify(r.corpo))
+r = await post('/pedidos', { cliente, endereco, sessao, itens: [a.id], forma_pagamento: 'credit_card', cupom: 'TESTEFRETE' })
+const freteGratis = r.corpo.pedido
+checar('pedido abaixo do mínimo sai com frete 0', freteGratis?.frete === 0, `veio ${freteGratis?.frete}`)
+checar('e o total é só a peça', freteGratis?.total === precoA, `veio ${freteGratis?.total}, peça ${precoA}`)
+checar('mais rápida paga só a diferença', calcularFrete(50, 30, 20, true) === 10)
+checar('a mais barata sai de graça', calcularFrete(50, 20, 20, true) === 0)
+checar('sem cupom, abaixo do mínimo paga cheio', calcularFrete(50, 30, 20, false) === 30)
 
 // ── 3. consulta pública ────────────────────────────────────────────
 console.log('\n3. Consulta pública do pedido')
@@ -156,29 +173,11 @@ const { pool } = await import('../src/db.js')
 const c = await pool.connect()
 try {
   await c.query('BEGIN')
-  const { rows: cli } = await c.query("SELECT id FROM customers WHERE email LIKE 'teste%@tropia.com'")
-  const ids = cli.map(r => r.id)
-  await c.query('DELETE FROM orders    WHERE customer_id = ANY($1::uuid[])', [ids])
-  await c.query('DELETE FROM addresses WHERE customer_id = ANY($1::uuid[])', [ids])
-  await c.query('DELETE FROM customers WHERE id          = ANY($1::uuid[])', [ids])
-  await c.query("DELETE FROM coupons   WHERE code = 'TESTE20'")
-  // Devolve para a vitrine qualquer peça que o teste tenha dado baixa
-  // Solta toda peça que não esteja num pedido de verdade (pago em diante), e
-  // não só as que este teste usou: execução anterior morta no meio também
-  // deixa peça presa, e ela precisa voltar para a vitrine.
-  await c.query(`UPDATE products SET sold = FALSE, reserved_until = NULL, reserved_by = NULL
-                  WHERE id NOT IN (SELECT oi.product_id FROM order_items oi
-                                     JOIN orders o ON o.id = oi.order_id
-                                    WHERE o.status IN ('paid','shipped','delivered')
-                                      AND oi.product_id IS NOT NULL)`)
+  const tocadas = await limparPedidosDeTeste(c, [a.id, b.id])
+  await c.query("DELETE FROM coupons   WHERE code IN ('TESTE20', 'TESTEFRETE')")
   await c.query('COMMIT')
-  // Conta só o que ESTE teste criou. Assumir a tabela vazia era errado: o
-  // banco de produção tem pedidos reais, e a limpeza não deve tocá-los.
-  const { rows: [n] } = await c.query(`
-    SELECT (SELECT COUNT(*) FROM orders o JOIN customers c ON c.id = o.customer_id
-             WHERE c.email LIKE 'teste%@tropia.com')::int p,
-           (SELECT COUNT(*) FROM products WHERE sold)::int v`)
-  checar('nao sobrou nada do teste', n.p === 0 && n.v === 0, JSON.stringify(n))
+  const n = await sobrouDoTeste(c, tocadas)
+  checar('nao sobrou nada do teste', n.pedidos === 0 && n.presas === 0, JSON.stringify(n))
 } catch (e) { await c.query('ROLLBACK'); checar('limpeza', false, e.message) }
 finally { c.release(); await pool.end() }
 

@@ -20,15 +20,21 @@ const TROCA = 160
  * No celular o zoom fica por conta do próprio navegador (pinça), que é mais
  * fluido que qualquer coisa reimplementada em JavaScript. No desktop, clicar
  * amplia e o mouse arrasta a área visível.
+ *
+ * Controlada: quem sabe qual foto está aberta é a galeria da página, e a lupa
+ * só pede para mudar (`aoMudar`). Quando cada uma guardava o próprio índice,
+ * a miniatura da lupa trocava só a lupa, a seta rápida perdia um passo dentro
+ * do fade, e a foto de trás ficava diferente da da frente.
  */
-export default function Lupa({ fotos, indice, nome, aoFechar }) {
+export default function Lupa({ fotos, indice, aoMudar, nome, aoFechar }) {
+  // A foto que está NA TELA. Segue `indice` com atraso de TROCA, para dar
+  // tempo de apagar antes de trocar.
   const [i, setI] = useState(indice)
   const [ampliado, setAmpliado] = useState(false)
   const [origem, setOrigem] = useState({ x: 50, y: 50 })
   const [entrou, setEntrou] = useState(false)   // fundo e foto surgem aos poucos
   const [trocando, setTrocando] = useState(false)
   const inicioX = useRef(null)
-  const relogio = useRef(null)
 
   // Só depois de montado é que ligamos a opacidade: o navegador precisa
   // pintar o estado inicial uma vez para ter de onde animar.
@@ -42,33 +48,38 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
     return () => { cancelAnimationFrame(quadro); clearTimeout(rede) }
   }, [])
 
-  const ir = useCallback((n) => {
-    const proximo = (n + fotos.length) % fotos.length
-    if (proximo === i) return
-    // Apaga, troca, acende: o corte seco entre duas fotos de roupa parecia
-    // falha de carregamento.
+  // Absoluto (miniatura) ou relativo (seta, swipe). O relativo vai como
+  // função do índice atual da galeria: duas setas antes de a tela redesenhar
+  // leriam o mesmo índice velho e andariam um passo só.
+  const ir = useCallback((n) => aoMudar(n), [aoMudar])
+  const passar = useCallback((d) => aoMudar(atual => atual + d), [aoMudar])
+
+  // Apaga, troca, acende: o corte seco entre duas fotos de roupa parecia
+  // falha de carregamento. Se o índice mudar de novo no meio do apagar, o
+  // timer recomeça já com o destino novo — nenhum passo se perde, porque a
+  // conta é sempre feita sobre `indice`, que é o da galeria.
+  useEffect(() => {
+    if (indice === i) return
     setTrocando(true)
-    clearTimeout(relogio.current)
-    relogio.current = setTimeout(() => {
-      setI(proximo)
+    const t = setTimeout(() => {
+      setI(indice)
       setAmpliado(false)
       setTrocando(false)
     }, TROCA)
-  }, [fotos.length, i])
-
-  useEffect(() => () => clearTimeout(relogio.current), [])
+    return () => clearTimeout(t)
+  }, [indice, i])
 
   // Teclado: setas navegam, Esc fecha. Sem isto o modal vira uma armadilha
   // para quem não usa mouse.
   useEffect(() => {
     const aoTeclar = (e) => {
       if (e.key === 'Escape') { ampliado ? setAmpliado(false) : aoFechar() }
-      if (e.key === 'ArrowLeft') ir(i - 1)
-      if (e.key === 'ArrowRight') ir(i + 1)
+      if (e.key === 'ArrowLeft') passar(-1)
+      if (e.key === 'ArrowRight') passar(1)
     }
     window.addEventListener('keydown', aoTeclar)
     return () => window.removeEventListener('keydown', aoTeclar)
-  }, [i, ampliado, ir, aoFechar])
+  }, [ampliado, passar, aoFechar])
 
   // Trava o rolar da página atrás do modal
   useEffect(() => {
@@ -81,7 +92,7 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
   const aoSoltar = (e) => {
     if (inicioX.current === null) return
     const dif = inicioX.current - e.changedTouches[0].clientX
-    if (Math.abs(dif) > 45) ir(i + (dif > 0 ? 1 : -1))
+    if (Math.abs(dif) > 45) passar(dif > 0 ? 1 : -1)
     inicioX.current = null
   }
 
@@ -111,10 +122,13 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
       </div>
 
       {/* touch-action pinch-zoom entrega a pinça para o navegador em vez de
-          reimplementar gesto na mão — mais fluido e sem bug de dois dedos. */}
+          reimplementar gesto na mão — mais fluido e sem bug de dois dedos.
+
+          Esta área não segura o clique: clicar no fundo em volta da foto
+          fecha. Antes ela bloqueava, e só o cabeçalho e o rodapé fechavam —
+          o fundo marrom parecia clicável e não era. Quem segura é a foto. */}
       <div className="flex-1 min-h-0 flex items-center justify-center px-2 pb-2 overflow-hidden"
         style={{ touchAction: 'pinch-zoom' }}
-        onClick={(e) => e.stopPropagation()}
         onTouchStart={aoTocar} onTouchEnd={aoSoltar}>
         <img
           src={otimizar(fotos[i], 1600, MELHOR)}
@@ -122,7 +136,7 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
           sizes="100vw"
           alt={`${nome} — foto ${i + 1}`}
           onMouseMove={mover}
-          onClick={() => setAmpliado(v => !v)}
+          onClick={(e) => { e.stopPropagation(); setAmpliado(v => !v) }}
           className={`max-w-full max-h-full object-contain select-none
             ${trocando || !entrou ? 'opacity-0' : 'opacity-100'}
             ${ampliado ? 'scale-[2.2] cursor-zoom-out' : 'cursor-zoom-in'}`}
@@ -136,12 +150,11 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
       </div>
 
       {fotos.length > 1 && (
-        <div className="flex-none flex items-center justify-center gap-2 pb-5 px-4"
-          onClick={(e) => e.stopPropagation()}>
+        <div className="flex-none flex items-center justify-center gap-2 pb-5 px-4">
           {fotos.map((f, n) => (
-            <button key={n} onClick={() => ir(n)} aria-label={`Ver foto ${n + 1}`}
+            <button key={n} onClick={(e) => { e.stopPropagation(); ir(n) }} aria-label={`Ver foto ${n + 1}`}
               className={`w-10 rounded-sm overflow-hidden border transition-all duration-200
-                ${n === i ? 'border-[#ffc509]' : 'border-transparent opacity-50 hover:opacity-100'}`}
+                ${n === indice ? 'border-[#ffc509]' : 'border-transparent opacity-50 hover:opacity-100'}`}
               style={{ height: '3.25rem' }}>
               <img src={otimizar(f, 120)} alt="" className="w-full h-full object-contain" />
             </button>
@@ -150,8 +163,8 @@ export default function Lupa({ fotos, indice, nome, aoFechar }) {
       )}
 
       <p className="flex-none text-center text-[10px] tracking-[0.16em] text-[#eae1d4]/50 pb-4 md:pb-6">
-        <span className="hidden md:inline">CLIQUE NA FOTO PARA AMPLIAR · ESC PARA FECHAR</span>
-        <span className="md:hidden">USE DOIS DEDOS PARA AMPLIAR</span>
+        <span className="hidden md:inline">CLIQUE NA FOTO PARA AMPLIAR · CLIQUE FORA PARA FECHAR</span>
+        <span className="md:hidden">DOIS DEDOS AMPLIAM · TOQUE FORA PARA FECHAR</span>
       </p>
     </div>,
     document.body

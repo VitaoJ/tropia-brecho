@@ -25,8 +25,10 @@ router.get('/', async (req, res) => {
       filtros.push(`c.slug = $${valores.length}`)
     }
     if (tamanho) {
-      valores.push(tamanho)
-      filtros.push(`p.size = $${valores.length}`)
+      // O filtro do site tem lista fixa (PP–GG, 35–44), mas o tamanho é
+      // digitado à mão no painel: "g" ou "M " têm que cair no G e no M.
+      valores.push(String(tamanho).trim())
+      filtros.push(`UPPER(TRIM(p.size)) = UPPER($${valores.length})`)
     }
     if (genero) {
       valores.push(genero)

@@ -34,7 +34,7 @@ export default function App() {
       <ScrollToTop />
       <Routes>
         {/* Site público — navbar no topo e, no mobile, barra inferior */}
-        <Route path="/"            element={<Layout><Home /></Layout>} />
+        <Route path="/"            element={<Layout rodapeColado><Home /></Layout>} />
         <Route path="/catalogo"    element={<Layout><Catalogo /></Layout>} />
         <Route path="/produto/:id" element={<Layout><Produto /></Layout>} />
         <Route path="/carrinho"    element={<Layout><Carrinho /></Layout>} />

@@ -20,15 +20,17 @@ export const arredondar = (valor) => Math.round(Number(valor) * 100) / 100
  * @param {string}   formaPagamento
  * @param {number}   freteEscolhido   preço da opção que o cliente escolheu
  * @param {number}   freteMaisBarato  preço da opção mais barata da cotação
+ * @param {boolean}  freteGratis  o cupom dá frete grátis
  */
 export function calcularTotais(precos, percentual = 0, formaPagamento = 'pix',
-                               freteEscolhido = null, freteMaisBarato = null) {
+                               freteEscolhido = null, freteMaisBarato = null,
+                               freteGratis = false) {
   const subtotal = arredondar(precos.reduce((soma, p) => soma + Number(p), 0))
   const desconto = arredondar(subtotal * (percentual / 100))
   const comCupom = arredondar(subtotal - desconto)
 
   // O frete grátis olha o valor já com cupom — mesma regra da barra do carrinho.
-  const frete = calcularFrete(comCupom, freteEscolhido, freteMaisBarato)
+  const frete = calcularFrete(comCupom, freteEscolhido, freteMaisBarato, freteGratis)
 
   // Cupom e PIX se acumulam: o PIX incide sobre o valor já com cupom.
   const comPagamento = formaPagamento === 'pix'
@@ -55,12 +57,15 @@ export function calcularTotais(precos, percentual = 0, formaPagamento = 'pix',
  * `escolhida` e `maisBarata` são os preços vindos da cotação. Enquanto a
  * cotação não estiver ligada, os dois vêm nulos e vale o frete fixo antigo —
  * assim o site continua funcionando durante a transição.
+ *
+ * `gratis` é o cupom de frete grátis: vale a mesma regra do mínimo, a loja
+ * cobre a opção mais barata, sem precisar chegar ao valor.
  */
-export function calcularFrete(subtotal, escolhida = null, maisBarata = null) {
+export function calcularFrete(subtotal, escolhida = null, maisBarata = null, gratis = false) {
   const temCotacao = escolhida != null && maisBarata != null
   const cheio = temCotacao ? Number(escolhida) : FRETE_FIXO
   const base  = temCotacao ? Number(maisBarata) : FRETE_FIXO
 
-  if (subtotal < FRETE_GRATIS_ACIMA_DE) return arredondar(cheio)
+  if (!gratis && subtotal < FRETE_GRATIS_ACIMA_DE) return arredondar(cheio)
   return arredondar(Math.max(0, cheio - base))
 }

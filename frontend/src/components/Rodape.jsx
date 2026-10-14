@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { formatarPreco, FRETE_FIXO, FRETE_GRATIS_ACIMA_DE, DESCONTO_PIX } from '../utils/preco'
+import { DESCONTO_PIX } from '../utils/preco'
 import logoTexto from '../assets/logo-texto.svg'
 import { EMAIL, INSTAGRAM, INSTAGRAM_URL, TELEFONE_EXIBICAO, WHATSAPP_URL } from '../utils/contato'
 
@@ -16,16 +16,16 @@ const COLUNAS = [
     ['Masculino', '/catalogo?genero=masculino'],
     ['Favoritos', '/favoritos'],
   ]],
-  ['A Tropia', [
+  ['Tropia', [
     ['Quem somos', '/quem-somos'],
     ['Upcycling e customização', '/upcycling'],
     ['Contato', '/contato'],
   ]],
 ]
 
-export default function Rodape() {
+export default function Rodape({ colado = false }) {
   return (
-    <footer className="bg-[#250000] text-[#eae1d4] mt-16 md:mt-24">
+    <footer className={`bg-[#250000] text-[#eae1d4] ${colado ? '' : 'mt-16 md:mt-24'}`}>
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-10 md:py-14">
 
         {/* No celular a marca vem primeiro e as colunas empilham em duas */}
@@ -33,8 +33,8 @@ export default function Rodape() {
           <div className="mb-8 md:mb-0">
             <img src={logoTexto} alt="Tropia" className="h-8 md:h-9 object-contain invert mb-3" />
             <p className="text-[13px] leading-relaxed text-[#eae1d4]/70 max-w-[38ch]">
-              Brechó de peças únicas, garimpadas uma a uma. Cada item existe em
-              uma só unidade — o que sai, não volta.
+              Acervo de peças exclusivas, garimpadas e customizadas por nós,
+              uma por uma. Garanta a sua e seja tropia!
             </p>
           </div>
 
@@ -75,8 +75,9 @@ export default function Rodape() {
         {/* As regras que mais geram dúvida, ditas onde a pessoa procura */}
         <div className="mt-10 md:mt-12 pt-6 border-t border-[#eae1d4]/15
           grid grid-cols-1 sm:grid-cols-3 gap-4 text-[12px] text-[#eae1d4]/70">
-          <p><strong className="font-medium text-[#eae1d4]">Frete</strong> {formatarPreco(FRETE_FIXO)} fixo,
-            grátis acima de {formatarPreco(FRETE_GRATIS_ACIMA_DE)}</p>
+          {/* Sem valor: o frete é cotado na hora, por CEP e transportadora. */}
+          <p><strong className="font-medium text-[#eae1d4]">Frete</strong> com variedade de opções
+            de envio à sua escolha</p>
           <p><strong className="font-medium text-[#eae1d4]">PIX</strong> {DESCONTO_PIX * 100}% de desconto,
             acumulável com cupom</p>
           <p><strong className="font-medium text-[#eae1d4]">Peça única</strong> uma unidade de cada,
